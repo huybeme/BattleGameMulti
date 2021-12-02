@@ -31,6 +31,7 @@ async def communication_with_server(event_loop):
         UDPClientSocket.sendto(str.encode(message), ("10.0.0.246", 25001))
         data_packet = UDPClientSocket.recvfrom(1024)
         data = data_packet[0]   # get the encoded string
+        print(f"{data_packet[1]}: {data}")
 
 
 

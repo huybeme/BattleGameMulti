@@ -31,12 +31,13 @@ def main():
     while(True):
         data_packet = UDPServerSocket.recvfrom(1024)    # sets the packet size
         message = data_packet[0]            # data stored here within tuple
-        client_address = data_packet[1]     # client IP addr is stored here
-        print(message)
+        client_address = data_packet[1]     # client IP addr is stored here, nothing beyond [1]
+        print(f"from: {client_address}")
+        print(f"\tmessage: {message}")
 
         # do something here if first time seeing player
 
-        UDPServerSocket.sendto(str.encode("connected to server"), client_address)
+        UDPServerSocket.sendto(str.encode("server recieved your message"), client_address)
 
 if __name__ == '__main__':
     main()
