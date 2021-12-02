@@ -291,78 +291,307 @@ class PowerUpSprite(arcade.Sprite):
 
 # ------- MAIN GAME CLASS ----------------------------------------------------------------V
 class TiledWindow(arcade.Window):
-    def __init__(self, screen_width, screen_height, title):
+    def __init__(self, client_addr, server_addr, server_port):
         # Parent class call
-        super().__init__(screen_width, screen_height, title)
+        super().__init__(SCREEN_WIDTH, SCREEN_HEIGHT)
 
-        # Initializing our variables and objects
-        self.scene = None
-        self.map_scene = None
+        # Multiplayer Networking
+        self.ip_addr =client_addr
+        self.server_address = server_addr
+        self.server_port = server_port
+
+        self.round = 1
+        self.game_frame = 0
+        self.restart_tick = 5
+
+        layer_options = {
+            "Water": {"use_spatial_hash": True},
+            "Beach": {"use_spatial_hash": True},
+            "Ice": {"use_spatial_hash": True},
+            "Lower_Decorative": {"use_spatial_hash": True},
+            "Solids": {"use_spatial_hash": True},
+            "Upper_Decorative": {"use_spatial_hash": True},
+        }
+
         self.map_1_location = pathlib.Path.cwd() / "Assets/Battle_Ships_Map_1.json"
         self.map_2_location = pathlib.Path.cwd() / "Assets/Battle_Ships_Map_2.json"
         self.map_3_location = pathlib.Path.cwd() / "Assets/Battle_Ships_Map_3.json"
-        self.game_frame = None
-        # self.tile_map = None
 
-        # players
-        self.player_1 = None
-        self.physics_engine_wall_p1 = None
-        self.player_2 = None
-        self.physics_engine_wall_p2 = None
+        self.tile_map1 = arcade.load_tilemap(
+            self.map_1_location,
+            layer_options=layer_options,
+            scaling=SPRITE_SCALING_TILES,
+        )
+        self.tile_map2 = arcade.load_tilemap(
+            self.map_2_location,
+            layer_options=layer_options,
+            scaling=SPRITE_SCALING_TILES,
+        )
+        self.tile_map3 = arcade.load_tilemap(
+            self.map_3_location,
+            layer_options=layer_options,
+            scaling=SPRITE_SCALING_TILES,
+        )
+        self.wall_list = self.tile_map1.sprite_lists["Solids"]
+        self.beach_tile_list = self.tile_map1.sprite_lists["Beach"]
+        self.water_tile_list = self.tile_map1.sprite_lists["Water"]
+
+        self.map_scene = arcade.Scene.from_tilemap(self.tile_map1)
+
+        # player setup
+        player_1_ss = SpriteSheet("ship_sheets", "shipsheet", 128, 128, 4, 8, 7)
+        self.player_1 = Player(
+            "./Assets/Player/pirateship.png",
+            SPRITE_SCALING_PLAYER,
+            lives=5,
+            id=1,
+            sheet=player_1_ss,
+        )
+        self.player_1.set_position(80, 80)
+        self.physics_engine_wall_p1 = arcade.PhysicsEngineSimple(
+            self.player_1, self.wall_list
+        )
+        self.player_1.weapon.set_position(
+            self.player_1.center_x, self.player_1.center_y
+        )
+
+        player_2_ss = SpriteSheet("lapras_sheet", "lapras_sheet", 95, 95, 4, 8, 3)
+        self.player_2 = Player(
+            "./Assets/Player/lapras_start.png", 1, lives=5, id=2, sheet=player_2_ss
+        )
+        self.physics_engine_wall_p2 = arcade.PhysicsEngineSimple(
+            self.player_2, self.wall_list
+        )
+        self.player_2.set_position(SCREEN_WIDTH - 64, SCREEN_HEIGHT - 64)
+        self.player_2.weapon.set_position(
+            self.player_2.center_x, self.player_2.center_y
+        )
+
 
         # lists
-        self.player_list = None
-        self.enemy_list = None
-        self.wall_list = None
-        self.decorative_list = None
-        self.beach_list = None
-        self.ice_list = None
-        self.shot_list = None
-        self.weapon_list = None
-        self.enemy_1_list = None
-        self.enemy_bullet_list = None
-        self.enemy_2_list = None
-        self.power_up_list = None
-        self.heart_list = None
-        self.basic_shot_list = None
-        self.explosion_list = None
-        self.barrel_sprite_list = None
-        self.barrel_list = None
-        self.barrel_frames = None
-        self.ice_list = None
-        self.whirlpool_list = None
-        self.whirlpool_sprite = None
-        self.pre_whirlpool_list = None
-        self.pre_whirlpool_sprite = None
-        self.post_whirlpool_list = None
+        self.player_list = arcade.SpriteList()
+        self.enemy_list = arcade.SpriteList()
+        self.player_bullet_list = arcade.SpriteList()
+        self.weapon_list = arcade.SpriteList()
+        self.enemy_bullet_list = arcade.SpriteList()
+        self.power_up_list = arcade.SpriteList()
+        self.explosion_list = arcade.SpriteList()
+        self.barrel_list = arcade.SpriteList()
+
+        self.player_list.append(self.player_1)
+        self.player_list.append(self.player_2)
+        self.weapon_list.append(self.player_1.weapon)
+        self.weapon_list.append(self.player_2.weapon)
+
+        self.pre_whirlpool_list = arcade.SpriteList()
+        # self.whirlpool_sprite = None
+        self.post_whirlpool_list = arcade.SpriteList()
         self.post_whirlpool_sprite = None
-        self.bullet_list = None
-        self.background = None
 
         # Objects
-        self.barrel_1 = None
-        self.barrel_2 = None
-        self.barrel_3 = None
-        self.barrel_4 = None
-        self.barrel_5 = None
-        self.barrel_6 = None
-        self.barrel_7 = None
-        self.barrel_8 = None
-        self.barrel_9 = None
-        self.barrel_10 = None
-        self.barrel_11 = None
-        self.barrel_12 = None
-        self.barrel_13 = None
-        self.barrel_14 = None
 
-        self.whirlpool_1 = None
-        self.whirlpool_2 = None
-        self.whirlpool_3 = None
-        self.whirlpool_4 = None
-        self.whirlpool_5 = None
-        self.whirlpool_6 = None
-        self.whirlpool_7 = None
-        self.whirlpool_8 = None
+
+            # MAP 1
+        self.barrel_1 = arcade.AnimatedTimeBasedSprite(
+            "./Assets/World/Objects/Barrel/SPR_Barrel_0.png",
+            1,
+            center_x=285,
+            center_y=340,
+        )
+        self.barrel_2 = arcade.AnimatedTimeBasedSprite(
+            "./Assets/World/Objects/Barrel/SPR_Barrel_0.png",
+            1,
+            center_x=SCREEN_WIDTH - 285,
+            center_y=SCREEN_HEIGHT - 340,
+        )
+        self.barrel_3 = arcade.AnimatedTimeBasedSprite(
+            "./Assets/World/Objects/Barrel/SPR_Barrel_0.png",
+            1,
+            center_x=560,
+            center_y=660,
+        )
+        self.barrel_4 = arcade.AnimatedTimeBasedSprite(
+            "./Assets/World/Objects/Barrel/SPR_Barrel_0.png",
+            1,
+            center_x=SCREEN_WIDTH - 560,
+            center_y=SCREEN_HEIGHT - 660,
+        )
+
+        # MAP 2
+        self.barrel_5 = arcade.AnimatedTimeBasedSprite(
+            "./Assets/World/Objects/Barrel/SPR_Barrel_0.png",
+            1,
+            center_x=400,
+            center_y=400,
+        )
+        self.barrel_6 = arcade.AnimatedTimeBasedSprite(
+            "./Assets/World/Objects/Barrel/SPR_Barrel_0.png",
+            1,
+            center_x=SCREEN_WIDTH - 380,
+            center_y=400,
+        )
+        self.barrel_7 = arcade.AnimatedTimeBasedSprite(
+            "./Assets/World/Objects/Barrel/SPR_Barrel_0.png",
+            1,
+            center_x=200,
+            center_y=300,
+        )
+        self.barrel_8 = arcade.AnimatedTimeBasedSprite(
+            "./Assets/World/Objects/Barrel/SPR_Barrel_0.png",
+            1,
+            center_x=SCREEN_WIDTH - 200,
+            center_y=SCREEN_HEIGHT - 300,
+        )
+        self.barrel_9 = arcade.AnimatedTimeBasedSprite(
+            "./Assets/World/Objects/Barrel/SPR_Barrel_0.png",
+            1,
+            center_x=SCREEN_WIDTH - 100,
+            center_y=100,
+        )
+        self.barrel_10 = arcade.AnimatedTimeBasedSprite(
+            "./Assets/World/Objects/Barrel/SPR_Barrel_0.png",
+            1,
+            center_x=100,
+            center_y=SCREEN_HEIGHT - 100,
+        )
+
+        # MAP 3
+        self.barrel_11 = arcade.AnimatedTimeBasedSprite(
+            "./Assets/World/Objects/Barrel/SPR_Barrel_0.png",
+            1,
+            center_x=384,
+            center_y=160,
+        )
+        self.barrel_12 = arcade.AnimatedTimeBasedSprite(
+            "./Assets/World/Objects/Barrel/SPR_Barrel_0.png",
+            1,
+            center_x=SCREEN_WIDTH - 384,
+            center_y=SCREEN_HEIGHT - 160,
+        )
+        self.barrel_13 = arcade.AnimatedTimeBasedSprite(
+            "./Assets/World/Objects/Barrel/SPR_Barrel_0.png",
+            1,
+            center_x=190,
+            center_y=SCREEN_HEIGHT - 120,
+        )
+        self.barrel_14 = arcade.AnimatedTimeBasedSprite(
+            "./Assets/World/Objects/Barrel/SPR_Barrel_0.png",
+            1,
+            center_x=SCREEN_WIDTH - 190,
+            center_y=120,
+        )
+
+        # --- BARREL-----------------------------------------------------------------------------//
+        barrel_sprite_path = "./Assets/World/Objects/Barrel/Barrel_Sprite_Sheet.png"
+        barrel_frames: List[arcade.AnimationKeyframe] = []
+
+        for row in range(2):
+            for column in range(4):
+                frame = arcade.AnimationKeyframe(
+                    (column + 1) * (row + 1),
+                    125,
+                    arcade.load_texture(
+                        str(barrel_sprite_path),
+                        x=column * 40,
+                        y=row * 50,
+                        width=40,
+                        height=50,
+                    ),
+                )
+                barrel_frames.append(frame)
+
+        self.barrel_1.frames = barrel_frames
+        self.barrel_2.frames = barrel_frames
+        self.barrel_3.frames = barrel_frames
+        self.barrel_4.frames = barrel_frames
+
+        # INITIAL MAP 1 ADD
+        self.barrel_list.append(self.barrel_1)
+        self.barrel_list.append(self.barrel_2)
+        self.barrel_list.append(self.barrel_3)
+        self.barrel_list.append(self.barrel_4)
+
+        self.barrel_5.frames = barrel_frames
+        self.barrel_6.frames = barrel_frames
+        self.barrel_7.frames = barrel_frames
+        self.barrel_8.frames = barrel_frames
+        self.barrel_9.frames = barrel_frames
+        self.barrel_10.frames = barrel_frames
+
+        self.barrel_11.frames = barrel_frames
+        self.barrel_12.frames = barrel_frames
+        self.barrel_13.frames = barrel_frames
+        self.barrel_14.frames = barrel_frames
+
+        # --- WHIRLPOOL -----------------------------------------------------------------------------//
+        self.whirlpool_list = arcade.SpriteList()
+        self.whirlpool_sprite_path = (
+            "./Assets/World/Hazards/Whirlpool/Whirlpool_Sprite_Sheet.png"
+        )
+
+        # --- POST-WHIRLPOOL -----------------------------------------------------------------------------//
+        self.post_whirlpool_list = arcade.SpriteList()
+        self.post_whirlpool_sprite_path = (
+            "./Assets/World/Hazards/Whirlpool/Post_Whirlpool_Sprite_Sheet.png"
+        )
+
+        pre_whirlpool_sprite_path = (
+            "./Assets/World/Hazards/Whirlpool/Pre_Whirlpool_SpriteSheet.png"
+        )
+        self.whirlpool_1 = arcade.AnimatedTimeBasedSprite(
+            pre_whirlpool_sprite_path, 0.3, center_x=580, center_y=120
+        )
+        self.whirlpool_2 = arcade.AnimatedTimeBasedSprite(
+            pre_whirlpool_sprite_path, 0.3, center_x=580, center_y=400
+        )
+        self.whirlpool_3 = arcade.AnimatedTimeBasedSprite(
+            pre_whirlpool_sprite_path, 0.3, center_x=580, center_y=SCREEN_HEIGHT - 90
+        )
+
+        self.whirlpool_4 = arcade.AnimatedTimeBasedSprite(
+            pre_whirlpool_sprite_path, 0.3, center_x=330, center_y=400
+        )
+        self.whirlpool_5 = arcade.AnimatedTimeBasedSprite(
+            pre_whirlpool_sprite_path, 0.3, center_x=450, center_y=250
+        )
+        self.whirlpool_6 = arcade.AnimatedTimeBasedSprite(
+            pre_whirlpool_sprite_path, 0.3, center_x=230, center_y=500
+        )
+        self.whirlpool_7 = arcade.AnimatedTimeBasedSprite(
+            pre_whirlpool_sprite_path, 0.3, center_x=675, center_y=440
+        )
+        self.whirlpool_8 = arcade.AnimatedTimeBasedSprite(
+            pre_whirlpool_sprite_path, 0.3, center_x=580, center_y=SCREEN_HEIGHT - 85
+        )
+
+        # --- PRE-WHIRLPOOL -------------------------------------------------------------------------//
+        pre_whirlpool_sprite_path = (
+            "./Assets/World/Hazards/Whirlpool/Pre_Whirlpool_SpriteSheet.png"
+        )
+        pre_whirlpool_frames: List[arcade.AnimationKeyframe] = []
+        for row in range(3):
+            for column in range(4):
+                frame = arcade.AnimationKeyframe(
+                    column * row,
+                    52,
+                    arcade.load_texture(
+                        str(pre_whirlpool_sprite_path),
+                        x=column * 312,
+                        y=row * 309,
+                        width=312,
+                        height=309,
+                    ),
+                )
+                pre_whirlpool_frames.append(frame)
+
+        self.whirlpool_1.frames = pre_whirlpool_frames
+        self.whirlpool_2.frames = pre_whirlpool_frames
+        self.whirlpool_3.frames = pre_whirlpool_frames
+        self.whirlpool_4.frames = pre_whirlpool_frames
+        self.whirlpool_5.frames = pre_whirlpool_frames
+        self.whirlpool_6.frames = pre_whirlpool_frames
+        self.whirlpool_7.frames = pre_whirlpool_frames
+        self.whirlpool_8.frames = pre_whirlpool_frames
 
         # Bitflags
         self.p1_invincibility_bool = True
@@ -436,309 +665,26 @@ class TiledWindow(arcade.Window):
         self.SFX_shot_hit = arcade.load_sound("Assets/SFX/Shot_Hit.wav")
         self.SFX_space_burst = arcade.load_sound("Assets/SFX/Space_Burst.wav")
 
-    # Initially sets up or restarts the game
-    def setup(self):
-        # Main Scene call
-        self.scene = arcade.Scene()
-        self.game_frame = 0
-        self.gameover = False
-        self.restart_tick = 5
-
-        # --- TILE LAYERS ----------------------------------------------------------------------------//
-        layer_options = {
-            "Water": {"use_spatial_hash": True},
-            "Beach": {"use_spatial_hash": True},
-            "Ice": {"use_spatial_hash": True},
-            "Lower_Decorative": {"use_spatial_hash": True},
-            "Solids": {"use_spatial_hash": True},
-            "Upper_Decorative": {"use_spatial_hash": True},
-        }
-
-        # TOGGLE ONE TO ENABLE SPECIFIC MAP -----V
-        self.round = 1
-        self.tile_map1 = arcade.load_tilemap(
-            self.map_1_location,
-            layer_options=layer_options,
-            scaling=SPRITE_SCALING_TILES,
-        )
-        self.tile_map2 = arcade.load_tilemap(
-            self.map_2_location,
-            layer_options=layer_options,
-            scaling=SPRITE_SCALING_TILES,
-        )
-        self.tile_map3 = arcade.load_tilemap(
-            self.map_3_location,
-            layer_options=layer_options,
-            scaling=SPRITE_SCALING_TILES,
-        )
-
-        self.map_scene = arcade.Scene.from_tilemap(self.tile_map1)
-        # wall_list is empty, without physicsengine, there is no movement
-        self.wall_list = self.tile_map1.sprite_lists["Solids"]
-        self.beach_tile_list = self.tile_map1.sprite_lists["Beach"]
-        self.water_tile_list = self.tile_map1.sprite_lists["Water"]
-
-        # --- BARREL-----------------------------------------------------------------------------//
-        self.barrel_list = arcade.SpriteList()
-        barrel_sprite_path = "./Assets/World/Objects/Barrel/Barrel_Sprite_Sheet.png"
-        barrel_frames: List[arcade.AnimationKeyframe] = []
-
-        for row in range(2):
-            for column in range(4):
-                frame = arcade.AnimationKeyframe(
-                    (column + 1) * (row + 1),
-                    125,
-                    arcade.load_texture(
-                        str(barrel_sprite_path),
-                        x=column * 40,
-                        y=row * 50,
-                        width=40,
-                        height=50,
-                    ),
-                )
-                barrel_frames.append(frame)
-
-            # MAP 1
-        self.barrel_1 = arcade.AnimatedTimeBasedSprite(
-            "./Assets/World/Objects/Barrel/SPR_Barrel_0.png",
-            1,
-            center_x=285,
-            center_y=340,
-        )
-        self.barrel_2 = arcade.AnimatedTimeBasedSprite(
-            "./Assets/World/Objects/Barrel/SPR_Barrel_0.png",
-            1,
-            center_x=SCREEN_WIDTH - 285,
-            center_y=SCREEN_HEIGHT - 340,
-        )
-        self.barrel_3 = arcade.AnimatedTimeBasedSprite(
-            "./Assets/World/Objects/Barrel/SPR_Barrel_0.png",
-            1,
-            center_x=560,
-            center_y=660,
-        )
-        self.barrel_4 = arcade.AnimatedTimeBasedSprite(
-            "./Assets/World/Objects/Barrel/SPR_Barrel_0.png",
-            1,
-            center_x=SCREEN_WIDTH - 560,
-            center_y=SCREEN_HEIGHT - 660,
-        )
-
-        self.barrel_1.frames = barrel_frames
-        self.barrel_2.frames = barrel_frames
-        self.barrel_3.frames = barrel_frames
-        self.barrel_4.frames = barrel_frames
-
-        # MAP 2
-        self.barrel_5 = arcade.AnimatedTimeBasedSprite(
-            "./Assets/World/Objects/Barrel/SPR_Barrel_0.png",
-            1,
-            center_x=400,
-            center_y=400,
-        )
-        self.barrel_6 = arcade.AnimatedTimeBasedSprite(
-            "./Assets/World/Objects/Barrel/SPR_Barrel_0.png",
-            1,
-            center_x=SCREEN_WIDTH - 380,
-            center_y=400,
-        )
-        self.barrel_7 = arcade.AnimatedTimeBasedSprite(
-            "./Assets/World/Objects/Barrel/SPR_Barrel_0.png",
-            1,
-            center_x=200,
-            center_y=300,
-        )
-        self.barrel_8 = arcade.AnimatedTimeBasedSprite(
-            "./Assets/World/Objects/Barrel/SPR_Barrel_0.png",
-            1,
-            center_x=SCREEN_WIDTH - 200,
-            center_y=SCREEN_HEIGHT - 300,
-        )
-        self.barrel_9 = arcade.AnimatedTimeBasedSprite(
-            "./Assets/World/Objects/Barrel/SPR_Barrel_0.png",
-            1,
-            center_x=SCREEN_WIDTH - 100,
-            center_y=100,
-        )
-        self.barrel_10 = arcade.AnimatedTimeBasedSprite(
-            "./Assets/World/Objects/Barrel/SPR_Barrel_0.png",
-            1,
-            center_x=100,
-            center_y=SCREEN_HEIGHT - 100,
-        )
-
-        self.barrel_5.frames = barrel_frames
-        self.barrel_6.frames = barrel_frames
-        self.barrel_7.frames = barrel_frames
-        self.barrel_8.frames = barrel_frames
-        self.barrel_9.frames = barrel_frames
-        self.barrel_10.frames = barrel_frames
-
-        # MAP 3
-        self.barrel_11 = arcade.AnimatedTimeBasedSprite(
-            "./Assets/World/Objects/Barrel/SPR_Barrel_0.png",
-            1,
-            center_x=384,
-            center_y=160,
-        )
-        self.barrel_12 = arcade.AnimatedTimeBasedSprite(
-            "./Assets/World/Objects/Barrel/SPR_Barrel_0.png",
-            1,
-            center_x=SCREEN_WIDTH - 384,
-            center_y=SCREEN_HEIGHT - 160,
-        )
-        self.barrel_13 = arcade.AnimatedTimeBasedSprite(
-            "./Assets/World/Objects/Barrel/SPR_Barrel_0.png",
-            1,
-            center_x=190,
-            center_y=SCREEN_HEIGHT - 120,
-        )
-        self.barrel_14 = arcade.AnimatedTimeBasedSprite(
-            "./Assets/World/Objects/Barrel/SPR_Barrel_0.png",
-            1,
-            center_x=SCREEN_WIDTH - 190,
-            center_y=120,
-        )
-
-        self.barrel_11.frames = barrel_frames
-        self.barrel_12.frames = barrel_frames
-        self.barrel_13.frames = barrel_frames
-        self.barrel_14.frames = barrel_frames
-
-        # INITIAL MAP 1 ADD
-        self.barrel_list.append(self.barrel_1)
-        self.barrel_list.append(self.barrel_2)
-        self.barrel_list.append(self.barrel_3)
-        self.barrel_list.append(self.barrel_4)
-
-        # --- PRE-WHIRLPOOL -------------------------------------------------------------------------//
-        self.pre_whirlpool_list = arcade.SpriteList()
-        pre_whirlpool_sprite_path = (
-            "./Assets/World/Hazards/Whirlpool/Pre_Whirlpool_SpriteSheet.png"
-        )
-        pre_whirlpool_frames: List[arcade.AnimationKeyframe] = []
-        for row in range(3):
-            for column in range(4):
-                frame = arcade.AnimationKeyframe(
-                    column * row,
-                    52,
-                    arcade.load_texture(
-                        str(pre_whirlpool_sprite_path),
-                        x=column * 312,
-                        y=row * 309,
-                        width=312,
-                        height=309,
-                    ),
-                )
-                pre_whirlpool_frames.append(frame)
-
-        self.whirlpool_1 = arcade.AnimatedTimeBasedSprite(
-            pre_whirlpool_sprite_path, 0.3, center_x=580, center_y=120
-        )
-        self.whirlpool_2 = arcade.AnimatedTimeBasedSprite(
-            pre_whirlpool_sprite_path, 0.3, center_x=580, center_y=400
-        )
-        self.whirlpool_3 = arcade.AnimatedTimeBasedSprite(
-            pre_whirlpool_sprite_path, 0.3, center_x=580, center_y=SCREEN_HEIGHT - 90
-        )
-
-        self.whirlpool_4 = arcade.AnimatedTimeBasedSprite(
-            pre_whirlpool_sprite_path, 0.3, center_x=330, center_y=400
-        )
-        self.whirlpool_5 = arcade.AnimatedTimeBasedSprite(
-            pre_whirlpool_sprite_path, 0.3, center_x=450, center_y=250
-        )
-        self.whirlpool_6 = arcade.AnimatedTimeBasedSprite(
-            pre_whirlpool_sprite_path, 0.3, center_x=230, center_y=500
-        )
-        self.whirlpool_7 = arcade.AnimatedTimeBasedSprite(
-            pre_whirlpool_sprite_path, 0.3, center_x=675, center_y=440
-        )
-        self.whirlpool_8 = arcade.AnimatedTimeBasedSprite(
-            pre_whirlpool_sprite_path, 0.3, center_x=580, center_y=SCREEN_HEIGHT - 85
-        )
-
-        self.whirlpool_1.frames = pre_whirlpool_frames
-        self.whirlpool_2.frames = pre_whirlpool_frames
-        self.whirlpool_3.frames = pre_whirlpool_frames
-        self.whirlpool_4.frames = pre_whirlpool_frames
-        self.whirlpool_5.frames = pre_whirlpool_frames
-        self.whirlpool_6.frames = pre_whirlpool_frames
-        self.whirlpool_7.frames = pre_whirlpool_frames
-        self.whirlpool_8.frames = pre_whirlpool_frames
-
-        # --- WHIRLPOOL -----------------------------------------------------------------------------//
-        self.whirlpool_list = arcade.SpriteList()
-        self.whirlpool_sprite_path = (
-            "./Assets/World/Hazards/Whirlpool/Whirlpool_Sprite_Sheet.png"
-        )
-
-        # --- POST-WHIRLPOOL -----------------------------------------------------------------------------//
-        self.post_whirlpool_list = arcade.SpriteList()
-        self.post_whirlpool_sprite_path = (
-            "./Assets/World/Hazards/Whirlpool/Post_Whirlpool_Sprite_Sheet.png"
-        )
-
         # --- POWER-UPS -----------------------------------------------------------------------------//
         self.power_up_list = arcade.SpriteList()
 
         self.p1_movement_speed_extra = 0
         self.p2_movement_speed_extra = 0
+        self.wait_between_powerups = 12
         self.p1_power_up_timer = 0
         self.p2_power_up_timer = 0
-        self.wait_between_powerups = 12
 
-        self.p1_hot_bullet = False
-        self.p2_hot_bullet = False
-
-        # --- EXPLOSION --------------------------------------------------------------------------//
-        self.explosion_list = arcade.SpriteList()
-
-        # --- PLAYER 1 -----------------------------------------------------------------------------//
-        self.player_list = arcade.SpriteList()
-        self.player_bullet_list = arcade.SpriteList()
-        self.weapon_list = arcade.SpriteList()
-
-        # player 1 setup
-        player_1_ss = SpriteSheet("ship_sheets", "shipsheet", 128, 128, 4, 8, 7)
-        self.player_1 = Player(
-            "./Assets/Player/pirateship.png",
-            SPRITE_SCALING_PLAYER,
-            lives=5,
-            id=1,
-            sheet=player_1_ss,
-        )
-        self.player_1.set_position(80, 80)
-
-        self.player_1.weapon.set_position(
-            self.player_1.center_x, self.player_1.center_y
-        )
-        self.player_list.append(self.player_1)
-        self.physics_engine_wall_p1 = arcade.PhysicsEngineSimple(
-            self.player_1, self.wall_list
-        )
-        self.weapon_list.append(self.player_1.weapon)
-
-        # player 2 setup
-        player_2_ss = SpriteSheet("lapras_sheet", "lapras_sheet", 95, 95, 4, 8, 3)
-        self.player_2 = Player(
-            "./Assets/Player/lapras_start.png", 1, lives=5, id=2, sheet=player_2_ss
-        )
-        self.player_2.set_position(SCREEN_WIDTH - 64, SCREEN_HEIGHT - 64)
-        self.player_2.weapon.set_position(
-            self.player_2.center_x, self.player_2.center_y
-        )
-        self.player_list.append(self.player_2)
-        self.physics_engine_wall_p2 = arcade.PhysicsEngineSimple(
-            self.player_2, self.wall_list
-        )
-        self.weapon_list.append(self.player_2.weapon)
+    # Initially sets up or restarts the game
+    def setup(self):
+        # Main Scene call
+        self.game_frame = 0
+        self.gameover = False
+        self.round = 1
+        self.SFX_chain_drop.play(0.9)
 
         # Computer enemy setup
-        self.enemy_list = arcade.SpriteList()
-        self.enemy_bullet_list = arcade.SpriteList()
-
-        self.SFX_chain_drop.play(0.9)
+        # self.enemy_list = arcade.SpriteList()
+        # self.enemy_bullet_list = arcade.SpriteList()
 
         # --- PHYSICS ----------------------------------------------------------------------------//
         self.physics_engine_wall = arcade.PhysicsEngineSimple(
@@ -1698,12 +1644,14 @@ class TiledWindow(arcade.Window):
         whirlpool.remove_from_sprite_lists()
 
 
-#  ////  ----- MAIN METHOD --------------------------------------------------------////
-def main():
-    window = TiledWindow(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
-    window.setup()
-    arcade.run()
+
+# #  ////  ----- MAIN METHOD --------------------------------------------------------////
+# def main():
+
+    # window = TiledWindow(server_addr, client_addr)
+    # window.setup()
+    # arcade.run()
 
 
-if __name__ == "__main__":
-    main()
+# if __name__ == "__main__":
+#     main()

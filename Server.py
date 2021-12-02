@@ -32,8 +32,8 @@ def main():
         data_packet = UDPServerSocket.recvfrom(1024)    # sets the packet size
         message = data_packet[0]            # data stored here within tuple
         client_address = data_packet[1]     # client IP addr is stored here, nothing beyond [1]
-        print(f"from: {client_address}")
-        print(f"\tmessage: {message}")
+        # print(f"from: {client_address}")
+        # print(f"\tmessage: {message}")
 
         # do something here if first time seeing player
 
