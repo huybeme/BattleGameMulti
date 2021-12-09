@@ -1,12 +1,14 @@
 import socket
 import json
 import PlayerState
+from typing import Dict
 import datetime
 import arcade
-import random
-from typing import Dict
+
+import game
 
 SERVER_PORT = 25001
+all_players: Dict[str, PlayerState.PlayerState] = {}
 
 def find_ip_address():
     server_address = ""
@@ -20,6 +22,32 @@ def find_ip_address():
         connection.close()
     return server_address
 
+def process_player_movement(player_move: PlayerState.PlayerMovement, client_address: str, gamestate: PlayerState.GameState):
+    player_info = gamestate.player_states[client_address[0]]
+    now = datetime.datetime.now()
+    if player_info.last_update + datetime.timedelta(milliseconds=20) > now:
+        return
+    player_info.last_update = now
+    delta_x = 0
+    delta_y = 0
+
+    if player_move.keys[str(arcade.key.UP)]:
+        delta_y = 3
+        print("pressed up")
+    elif player_move.keys[str(arcade.key.DOWN)]:
+        delta_y = -3
+        print("pressed down")
+    elif player_move.keys[str(arcade.key.LEFT)]:
+        delta_x = -3
+        print("pressed left")
+    elif player_move.keys[str(arcade.key.RIGHT)]:
+        delta_x = 3
+        print("pressed right")
+
+    player_info.x_loc += delta_x
+    player_info.y_loc += delta_y
+
+
 def main():
     server_address = find_ip_address()
     print(f"Server address is {server_address} on port {SERVER_PORT}")
@@ -28,16 +56,26 @@ def main():
     UDPServerSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
     UDPServerSocket.bind((server_address, SERVER_PORT))
 
+    gameState = PlayerState.GameState(all_players)
+
     while(True):
         data_packet = UDPServerSocket.recvfrom(1024)    # sets the packet size
         message = data_packet[0]            # data stored here within tuple
         client_address = data_packet[1]     # client IP addr is stored here, nothing beyond [1]
-        # print(f"from: {client_address}")
-        # print(f"\tmessage: {message}")
 
-        # do something here if first time seeing player
+        if not client_address[0] in all_players:
+            print(f"player: {client_address[0]} added")
+            # need to somehow get center x and y from game to here instead of hard code 80 80
+            # first_player: PlayerState.PlayerState = PlayerState.PlayerState(game.TiledWindow.player_1.center_x, game.TiledWindow.player_1.center_y, 0, datetime.datetime.now())
+            first_player: PlayerState.PlayerState = PlayerState.PlayerState(80, 80, 0, datetime.datetime.now())
+            all_players[client_address[0]] = first_player
 
-        UDPServerSocket.sendto(str.encode("server recieved your message"), client_address)
+        json_data = json.loads(message)
+        player_move: PlayerState.PlayerMovement = PlayerState.PlayerMovement()
+        player_move.keys = json_data
+        process_player_movement(player_move, client_address, gameState)
+        response = gameState.to_json()
+        UDPServerSocket.sendto(str.encode(response), client_address)
 
 if __name__ == '__main__':
     main()

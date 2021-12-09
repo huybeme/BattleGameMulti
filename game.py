@@ -16,6 +16,8 @@ import pathlib
 from typing import List
 from random import randint
 
+import PlayerState
+
 
 # ----@@@@--    CONSTANTS    --@@@@-------------------------------------------------//
 
@@ -296,9 +298,11 @@ class TiledWindow(arcade.Window):
         super().__init__(SCREEN_WIDTH, SCREEN_HEIGHT)
 
         # Multiplayer Networking
-        self.ip_addr =client_addr
+        self.ip_addr = client_addr
         self.server_address = server_addr
         self.server_port = server_port
+        self.actions = PlayerState.PlayerMovement()
+        self.from_server = ""
 
         self.round = 1
         self.game_frame = 0
@@ -681,6 +685,21 @@ class TiledWindow(arcade.Window):
         self.gameover = False
         self.round = 1
         self.SFX_chain_drop.play(0.9)
+
+        player_1_ss = SpriteSheet("ship_sheets", "shipsheet", 128, 128, 4, 8, 7)
+        self.player_1 = Player(
+            "./Assets/Player/pirateship.png",
+            SPRITE_SCALING_PLAYER,
+            lives=5,
+            id=1,
+            sheet=player_1_ss,
+        )
+        self.player_1.set_position(80, 80)
+        self.player_1.weapon.set_position(
+            self.player_1.center_x, self.player_1.center_y
+        )
+        self.player_list.append(self.player_1)
+        self.from_server = ""
 
         # Computer enemy setup
         # self.enemy_list = arcade.SpriteList()
@@ -1473,90 +1492,95 @@ class TiledWindow(arcade.Window):
 
     # ----- Key DOWN Events -----------------------------
     def on_key_press(self, key, modifiers):
-        # player 1 controls
-        if key == arcade.key.W:
-            # self.player_1.change_y = p1_movement_speed
-            self.player_1.direction[0] = True
-        if key == arcade.key.S:
-            # self.player_1.change_y = -p1_movement_speed
-            self.player_1.direction[2] = True
-        if key == arcade.key.A:
-            # self.player_1.change_x = -p1_movement_speed
-            self.player_1.direction[1] = True
-        if key == arcade.key.D:
-            # self.player_1.change_x = p1_movement_speed
-            self.player_1.direction[3] = True
+        if (key in self.actions.keys):
+            self.actions.keys[key] = True
 
-        if key == arcade.key.F:
-            self.player_1.weapon.change_angle = 3
-        if key == arcade.key.G:
-            self.player_1.weapon.change_angle = -3
-
-        if key == arcade.key.SPACE or key == arcade.key.R:
-            self.player_1.is_shooting = True
-            if key == arcade.key.R:
-                self.player_1.is_cannon_shooting = True
-
-        # Player 2 controls
-        if key == arcade.key.UP:
-            # self.player_2.change_y = p2_movement_speed
-            self.player_2.direction[0] = True
-        if key == arcade.key.DOWN:
-            # self.player_2.change_y = -p2_movement_speed
-            self.player_2.direction[2] = True
-        if key == arcade.key.LEFT:
-            # self.player_2.change_x = -p2_movement_speed
-            self.player_2.direction[1] = True
-        if key == arcade.key.RIGHT:
-            # self.player_2.change_x = p2_movement_speed
-            self.player_2.direction[3] = True
-
-        if key == arcade.key.PERIOD:
-            self.player_2.weapon.change_angle = 3
-        if key == arcade.key.SLASH:
-            self.player_2.weapon.change_angle = -3
-
-        if key == arcade.key.RCTRL or key == arcade.key.APOSTROPHE:
-            self.player_2.is_shooting = True
-            if key == arcade.key.APOSTROPHE:
-                self.player_2.is_cannon_shooting = True
+        # # player 1 controls
+        # if key == arcade.key.W:
+        #     # self.player_1.change_y = p1_movement_speed
+        #     self.player_1.direction[0] = True
+        # if key == arcade.key.S:
+        #     # self.player_1.change_y = -p1_movement_speed
+        #     self.player_1.direction[2] = True
+        # if key == arcade.key.A:
+        #     # self.player_1.change_x = -p1_movement_speed
+        #     self.player_1.direction[1] = True
+        # if key == arcade.key.D:
+        #     # self.player_1.change_x = p1_movement_speed
+        #     self.player_1.direction[3] = True
+        #
+        # if key == arcade.key.F:
+        #     self.player_1.weapon.change_angle = 3
+        # if key == arcade.key.G:
+        #     self.player_1.weapon.change_angle = -3
+        #
+        # if key == arcade.key.SPACE or key == arcade.key.R:
+        #     self.player_1.is_shooting = True
+        #     if key == arcade.key.R:
+        #         self.player_1.is_cannon_shooting = True
+        #
+        # # Player 2 controls
+        # if key == arcade.key.UP:
+        #     # self.player_2.change_y = p2_movement_speed
+        #     self.player_2.direction[0] = True
+        # if key == arcade.key.DOWN:
+        #     # self.player_2.change_y = -p2_movement_speed
+        #     self.player_2.direction[2] = True
+        # if key == arcade.key.LEFT:
+        #     # self.player_2.change_x = -p2_movement_speed
+        #     self.player_2.direction[1] = True
+        # if key == arcade.key.RIGHT:
+        #     # self.player_2.change_x = p2_movement_speed
+        #     self.player_2.direction[3] = True
+        #
+        # if key == arcade.key.PERIOD:
+        #     self.player_2.weapon.change_angle = 3
+        # if key == arcade.key.SLASH:
+        #     self.player_2.weapon.change_angle = -3
+        #
+        # if key == arcade.key.RCTRL or key == arcade.key.APOSTROPHE:
+        #     self.player_2.is_shooting = True
+        #     if key == arcade.key.APOSTROPHE:
+        #         self.player_2.is_cannon_shooting = True
 
     # ----- Key UP Events--------------------------------
     def on_key_release(self, key, modifiers):
+        if (key in self.actions.keys):
+            self.actions.keys[key] = False
 
-        # player 1 controls
-        if key == arcade.key.W:
-            self.player_1.change_y = 0
-            self.player_1.direction[0] = False
-        if key == arcade.key.S:
-            self.player_1.change_y = 0
-            self.player_1.direction[2] = False
-        if key == arcade.key.A:
-            self.player_1.change_x = 0
-            self.player_1.direction[1] = False
-        if key == arcade.key.D:
-            self.player_1.change_x = 0
-            self.player_1.direction[3] = False
-
-        if key == arcade.key.F or key == arcade.key.G:
-            self.player_1.weapon.change_angle = 0
-
-        # player 2 controls
-        if key == arcade.key.UP:
-            self.player_2.change_y = 0
-            self.player_2.direction[0] = False
-        if key == arcade.key.DOWN:
-            self.player_2.change_y = 0
-            self.player_2.direction[2] = False
-        if key == arcade.key.LEFT:
-            self.player_2.change_x = 0
-            self.player_2.direction[1] = False
-        if key == arcade.key.RIGHT:
-            self.player_2.change_x = 0
-            self.player_2.direction[3] = False
-
-        if key == arcade.key.PERIOD or key == arcade.key.SLASH:
-            self.player_2.weapon.change_angle = 0
+        # # player 1 controls
+        # if key == arcade.key.W:
+        #     self.player_1.change_y = 0
+        #     self.player_1.direction[0] = False
+        # if key == arcade.key.S:
+        #     self.player_1.change_y = 0
+        #     self.player_1.direction[2] = False
+        # if key == arcade.key.A:
+        #     self.player_1.change_x = 0
+        #     self.player_1.direction[1] = False
+        # if key == arcade.key.D:
+        #     self.player_1.change_x = 0
+        #     self.player_1.direction[3] = False
+        #
+        # if key == arcade.key.F or key == arcade.key.G:
+        #     self.player_1.weapon.change_angle = 0
+        #
+        # # player 2 controls
+        # if key == arcade.key.UP:
+        #     self.player_2.change_y = 0
+        #     self.player_2.direction[0] = False
+        # if key == arcade.key.DOWN:
+        #     self.player_2.change_y = 0
+        #     self.player_2.direction[2] = False
+        # if key == arcade.key.LEFT:
+        #     self.player_2.change_x = 0
+        #     self.player_2.direction[1] = False
+        # if key == arcade.key.RIGHT:
+        #     self.player_2.change_x = 0
+        #     self.player_2.direction[3] = False
+        #
+        # if key == arcade.key.PERIOD or key == arcade.key.SLASH:
+        #     self.player_2.weapon.change_angle = 0
 
     def random_power_up(self):
         random_x = randint(16, SCREEN_WIDTH - 16)

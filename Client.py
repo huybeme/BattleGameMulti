@@ -31,17 +31,22 @@ def setup_client_connection(client: game.TiledWindow):
 async def communication_with_server(client: game.TiledWindow, event_loop):  # client pulls from TiledWindow class
     UDPClientSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
     while True:
-        message = "hello"
-        UDPClientSocket.sendto(str.encode(message), (client.server_address, int(client.server_port)))
+        keystate = json.dumps(client.actions.keys)
+        UDPClientSocket.sendto(str.encode(keystate), (client.server_address, int(client.server_port)))
         data_packet = UDPClientSocket.recvfrom(1024)
         data = data_packet[0]   # get the encoded string
-        # print(f"{data_packet[1]}: {data}")
+        decoded_data: PlayerState.GameState = PlayerState.GameState.from_json(data)
+        player_dict = decoded_data.player_states
+        player_info: PlayerState.PlayerState = player_dict[client.ip_addr]
+
+        # game.TiledWindow.player_1.center_y = player_info.y_loc
+        # game.TiledWindow.player_1.center_x = player_info.x_loc
 
 
 
 def main():
 
-    SERVER_ADDR = "10.0.0.246"
+    SERVER_ADDR = "10.0.0.241"
     SERVER_PORT = "25001"
 
     CLIENT_ADDR = find_ip_address()
