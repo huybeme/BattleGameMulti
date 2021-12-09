@@ -10,10 +10,13 @@ from dataclasses import dataclass
 class PlayerState:
     x_loc: float
     y_loc: float
-    weapon_angle: float
     points: int
-    last_update: datetime.datetime
+    face_angle: int
 
+    weapon_angle: float
+    shooting: bool
+
+    last_update: datetime.datetime
 
 @dataclass_json
 @dataclass
@@ -23,8 +26,12 @@ class PlayerMovement:
         arcade.key.DOWN: False,
         arcade.key.LEFT: False,
         arcade.key.RIGHT: False,
+
         arcade.key.W: False,
         arcade.key.S: False,
+        arcade.key.A: False,
+        arcade.key.D: False,
+        arcade.key.E: False,
         arcade.key.SPACE: False
     }
 
@@ -32,12 +39,6 @@ class PlayerMovement:
         return f"UP: {self.keys[arcade.key.UP]}, Down: {self.keys[arcade.key.DOWN]}" \
                f", Left: {self.keys[arcade.key.LEFT]}, Right: {self.keys[arcade.key.RIGHT]}, "
 
-
-# @dataclass
-# @dataclass_json
-# class TargetState:
-#     x_loc: int
-#     y_loc: int
 
 
 @dataclass_json

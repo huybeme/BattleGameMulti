@@ -1,5 +1,4 @@
 import datetime
-import game
 import arcade
 import threading
 import asyncio
@@ -220,6 +219,24 @@ class Player(arcade.Sprite):
             self.face_angle = 0
             self.animation(self.sheet_0, update_per_frame)
 
+        if self.face_angle == 135:  # up left
+            self.animation(self.sheet_135, update_per_frame)
+        elif self.face_angle == 45:  # up right
+            self.animation(self.sheet_45, update_per_frame)
+        elif self.face_angle == 225:  # down left
+            self.animation(self.sheet_225, update_per_frame)
+        elif self.face_angle == 315:  # down right
+            self.animation(self.sheet_315, update_per_frame)
+        elif self.face_angle == 90:  # up
+            self.animation(self.sheet_90, update_per_frame)
+        elif self.face_angle == 180:  # left
+            self.animation(self.sheet_180, update_per_frame)
+        elif self.face_angle == 270:  # down
+            self.animation(self.sheet_270, update_per_frame)
+        elif self.face_angle == 0:  # right
+            self.animation(self.sheet_0, update_per_frame)
+
+
     def animation(self, sheet, update):
         self.current_texture += 1
         if self.current_texture > 7 * update:
@@ -336,10 +353,8 @@ class TiledWindow(arcade.Window):
 
         # lists
         self.player_list = arcade.SpriteList()
-        self.enemy_list = arcade.SpriteList()
         self.player_bullet_list = arcade.SpriteList()
         self.weapon_list = arcade.SpriteList()
-        self.enemy_bullet_list = arcade.SpriteList()
         self.power_up_list = arcade.SpriteList()
         self.explosion_list = arcade.SpriteList()
         self.barrel_list = arcade.SpriteList()
@@ -609,9 +624,6 @@ class TiledWindow(arcade.Window):
             sprite = arcade.load_texture(f"Assets/World/Effects/SPR_Explosion_{i}.png")
             self.explosion.append(sprite)
 
-        # self.enemy_player = BasicSprite("./Assets/Player/spike_ball/spike_ball_expl1.png", 5, SPRITE_SCALING_ENEMY, 3,
-        # game_window=self)
-
         # -------- SOUND FX -------------------------------------------------------------V
         self.SFX_basic_shot = arcade.load_sound("Assets/SFX/Basic_Shot.wav")
         self.SFX_big_explosion = arcade.load_sound("Assets/SFX/Big_Explosion.wav")
@@ -652,10 +664,6 @@ class TiledWindow(arcade.Window):
         self.physics_engine_wall_p1 = arcade.PhysicsEngineSimple(
             self.player_1, self.wall_list
         )
-
-        # Computer enemy setup
-        # self.enemy_list = arcade.SpriteList()
-        # self.enemy_bullet_list = arcade.SpriteList()
 
         # --- PHYSICS ----------------------------------------------------------------------------//
         self.physics_engine_wall = arcade.PhysicsEngineSimple(
@@ -917,14 +925,12 @@ class TiledWindow(arcade.Window):
 
         # collision control for player bullets
         for bullet in self.player_bullet_list:
-            hit_enemy = arcade.check_for_collision_with_list(bullet, self.enemy_list)
             hit_wall = arcade.check_for_collision_with_list(bullet, self.wall_list)
             hit_barrel = arcade.check_for_collision_with_list(bullet, self.barrel_list)
             hit_player = arcade.check_for_collision_with_list(bullet, self.player_list)
 
             if (
-                    len(hit_enemy) > 0
-                    or len(hit_wall) > 0
+                    len(hit_wall) > 0
                     or len(hit_barrel) > 0
                     or len(hit_player) > 0
             ):
@@ -1099,25 +1105,7 @@ class TiledWindow(arcade.Window):
         if player_2_collision:
             self.p2_total_movement_speed = 0.4
 
-        # ENEMY BULLETS -----------------------------------------------------------------\\
-        for enemy_bullet in self.enemy_bullet_list:
-            hit_player = arcade.check_for_collision_with_list(
-                enemy_bullet, self.player_list
-            )
-            hit_wall = arcade.check_for_collision_with_list(
-                enemy_bullet, self.wall_list
-            )
-            hit_barrel = arcade.check_for_collision_with_list(
-                enemy_bullet, self.barrel_list
-            )
-
-            if len(hit_player) > 0 or len(hit_wall) > 0 or len(hit_barrel) > 0:
-                explosion = arcade.Sprite("./Assets/World/Effects/SPR_Explosion_0.png")
-                explosion.center_x = enemy_bullet.center_x
-                explosion.center_y = enemy_bullet.center_y
-                self.explosion_list.append(explosion)
-
-                # SPECIAL POWER_UPS -----------------------------------------------------------------\\
+         # SPECIAL POWER_UPS -----------------------------------------------------------------\\
         for power_up in self.power_up_list:
 
             # Manual Animation
@@ -1184,25 +1172,6 @@ class TiledWindow(arcade.Window):
                 explosion.remove_from_sprite_lists()
                 self.current_explosion_sprite = 0
 
-        # computer enemy bullet control
-        for enemy_bullet in self.enemy_bullet_list:
-            hit_player = arcade.check_for_collision_with_list(
-                enemy_bullet, self.player_list
-            )
-            hit_wall = arcade.check_for_collision_with_list(
-                enemy_bullet, self.wall_list
-            )
-            hit_barrel = arcade.check_for_collision_with_list(
-                enemy_bullet, self.barrel_list
-            )
-
-            if len(hit_player) > 0 or len(hit_wall) > 0 or len(hit_barrel) > 0:
-                explosion = arcade.Sprite("./Assets/World/Effects/SPR_Explosion_0.png")
-                explosion.center_x = enemy_bullet.center_x
-                explosion.center_y = enemy_bullet.center_y
-                self.explosion_list.append(explosion)
-                # enemy_bullet.remove_from_sprite_lists()
-
             # PLAYER 1 MOVEMENT
             # UP
         if self.player_1.direction[0] == True:
@@ -1248,7 +1217,6 @@ class TiledWindow(arcade.Window):
             )
 
         if self.clear_flag:
-
             for pre_whirlpool in self.pre_whirlpool_list:
                 pre_whirlpool.remove_from_sprite_lists()
                 self.pre_whirlpool_list.update()
@@ -1266,8 +1234,6 @@ class TiledWindow(arcade.Window):
         self.player_list.update()
         self.player_list.update_animation()
         self.player_bullet_list.update()
-        self.enemy_list.update()
-        self.enemy_bullet_list.update()
         self.weapon_list.update()
         self.explosion_list.update()
         self.whirlpool_list.update_animation()
@@ -1311,10 +1277,6 @@ class TiledWindow(arcade.Window):
             "Frame: " + str(self.game_frame), 25, 25, arcade.csscolor.WHITE, 18
         )
 
-        self.enemy_bullet_list.draw()
-        for enemy in self.enemy_list:
-            enemy.draw_health_bar()
-
         self.barrel_list.draw()
 
         self.power_up_list.draw()
@@ -1330,7 +1292,6 @@ class TiledWindow(arcade.Window):
         self.player_list.draw()
 
         self.player_bullet_list.draw()
-        self.enemy_list.draw()
 
         if self.round >= 3 and (self.player_1.lives <= 0 or self.player_2.lives <= 0):
             if self.gameover:
@@ -1366,6 +1327,7 @@ class TiledWindow(arcade.Window):
                 arcade.csscolor.WHITE,
                 40,
             )
+
 
     def player_shooting(self, player):
         bullet = BulletSprite(
@@ -1508,14 +1470,14 @@ def find_ip_address():
         connection.close()
     return server_address
 
-def setup_client_connection(client: game.TiledWindow):
+def setup_client_connection(client: TiledWindow):
     client_event_loop = asyncio.new_event_loop()
     asyncio.set_event_loop(client_event_loop)
     client_event_loop.create_task(communication_with_server(client, client_event_loop))
     client_event_loop.run_forever()
 
 
-async def communication_with_server(client: game.TiledWindow, event_loop):  # client pulls from TiledWindow class
+async def communication_with_server(client: TiledWindow, event_loop):  # client pulls from TiledWindow class
     UDPClientSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
 
     while True:
@@ -1530,6 +1492,9 @@ async def communication_with_server(client: game.TiledWindow, event_loop):  # cl
         client.player_1.center_x = player_info.x_loc
         client.player_1.center_y = player_info.y_loc
         client.player_1.weapon.angle = player_info.weapon_angle
+        client.player_1.face_angle = player_info.face_angle
+
+        client.player_1.is_shooting = player_info.shooting
 
 
 

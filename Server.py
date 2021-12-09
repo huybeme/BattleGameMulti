@@ -4,8 +4,9 @@ import PlayerState
 from typing import Dict
 import datetime
 import arcade
+import math
 
-import game
+
 
 SERVER_PORT = 25001
 all_players: Dict[str, PlayerState.PlayerState] = {}
@@ -30,37 +31,50 @@ def process_player_movement(player_move: PlayerState.PlayerMovement, client_addr
     player_info.last_update = now
     delta_x = 0
     delta_y = 0
-    delta_weapon = 0
 
     if player_move.keys[str(arcade.key.UP)] and player_move.keys[str(arcade.key.RIGHT)]:
         delta_y = 3
         delta_x = 3
+        player_info.face_angle = 45
     elif player_move.keys[str(arcade.key.UP)] and player_move.keys[str(arcade.key.LEFT)]:
         delta_y = 3
         delta_x = -3
+        player_info.face_angle = 135
     elif player_move.keys[str(arcade.key.DOWN)] and player_move.keys[str(arcade.key.LEFT)]:
         delta_y = -3
         delta_x = -3
+        player_info.face_angle = 225
     elif player_move.keys[str(arcade.key.DOWN)] and player_move.keys[str(arcade.key.RIGHT)]:
         delta_y = -3
         delta_x = 3
+        player_info.face_angle = 315
     elif player_move.keys[str(arcade.key.UP)]:
         delta_y = 3
+        player_info.face_angle = 90
     elif player_move.keys[str(arcade.key.DOWN)]:
         delta_y = -3
+        player_info.face_angle = 270
     elif player_move.keys[str(arcade.key.LEFT)]:
         delta_x = -3
+        player_info.face_angle = 180
     elif player_move.keys[str(arcade.key.RIGHT)]:
         delta_x = 3
+        player_info.face_angle = 0
     player_info.x_loc += delta_x
     player_info.y_loc += delta_y
 
-    if player_move.keys[str(arcade.key.S)]:
+    delta_weapon = 0
+    dist_to_next_point = 10
+    cf = 7
+    if player_move.keys[str(arcade.key.S)] or player_move.keys[str(arcade.key.A)]:
         delta_weapon = -3
-    elif player_move.keys[str(arcade.key.W)]:
+    elif player_move.keys[str(arcade.key.W)] or player_move.keys[str(arcade.key.D)]:
         delta_weapon = 3
     player_info.weapon_angle += delta_weapon
 
+    player_info.shooting = False
+    if player_move.keys[str(arcade.key.SPACE)]:
+        player_info.shooting = True
 
 def main():
 
@@ -79,11 +93,13 @@ def main():
 
         if not client_address[0] in all_players:
             print(f"player: {client_address[0]} added")
-            first_player: PlayerState.PlayerState = PlayerState.PlayerState(80, 80, 0, 0, datetime.datetime.now())
+            first_player: PlayerState.PlayerState = PlayerState.PlayerState(
+                x_loc=80, y_loc=80, points=0, face_angle=90, weapon_angle=0, shooting=False, last_update=datetime.datetime.now()
+            )
             all_players[client_address[0]] = first_player
 
-
         json_data = json.loads(message)
+
         player_move: PlayerState.PlayerMovement = PlayerState.PlayerMovement()
         player_move.keys = json_data
         process_player_movement(player_move, client_address, gameState)

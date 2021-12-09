@@ -61,11 +61,12 @@ class WeaponSprite(arcade.Sprite):
 
 
 class BulletSprite(arcade.Sprite):
-    def __init__(self, img_path: str, speed: int, scale: float, game_window):
+    # def __init__(self, img_path: str, speed: int, scale: float, game_window):
+    def __init__(self, img_path: str, speed: int, scale: float):
         super().__init__(img_path)
         self.speed = speed
         self.scale = scale
-        self.game = game_window
+        # self.game = game_window
         self.player_id = 0
 
 
@@ -91,122 +92,6 @@ class SpriteSheet(arcade.Sprite):
 
 
 # <><><>----- PLAYER CLASS  -------------------------------------------------------------------------<><><>
-
-class Player_1(arcade.Sprite):
-    def __init__(
-            self, scale: float, lives: int, id: int):
-        super().__init__()
-
-        sheet = None
-        if id == 1:
-            sheet = SpriteSheet("ship_sheets", "shipsheet", 128, 128, 4, 8, 7)
-            self.img_path = "./Assets/Player/pirateship.png"
-        elif id == 2:
-            sheet = SpriteSheet("lapras_sheet", "lapras_sheet", 95, 95, 4, 8, 3)
-            img_path = "./Assets/Player/lapras_start.png"
-            center_x = SCREEN_WIDTH - 64
-            center_y = SCREEN_HEIGHT - 64
-
-        self.score = 0
-        self.scale = scale
-        self.num_bullets = 3
-        self.player_id = id
-        self.lives = lives
-        self.is_shooting = False
-        self.is_cannon_shooting = False
-        self.face_angle = 90  # since we start off facing up
-        self.weapon = WeaponSprite("./Assets/Player/cannon.png", 0.25)
-
-
-        # facing directions
-        self.direction = [False, False, False, False]  # up, left, down, right
-        self.spritesheet = None
-
-        self.sheet = sheet
-        self.sheet_0 = []
-        self.sheet_45 = []
-        self.sheet_90 = []
-        self.sheet_135 = []
-        self.sheet_180 = []
-        self.sheet_225 = []
-        self.sheet_270 = []
-        self.sheet_315 = []
-        for sprites in range(self.sheet.num_files):
-            self.sheet_0.append(
-                arcade.load_spritesheet(
-                    f"Assets/Player/{self.sheet.folder}/{self.sheet.filename}_{sprites}.png",
-                    self.sheet.x_px,
-                    self.sheet.y_px,
-                    self.sheet.col,
-                    self.sheet.num_sprites,
-                )[2]
-            )
-            self.sheet_45.append(
-                arcade.load_spritesheet(
-                    f"Assets/Player/{self.sheet.folder}/{self.sheet.filename}_{sprites}.png",
-                    self.sheet.x_px,
-                    self.sheet.y_px,
-                    self.sheet.col,
-                    self.sheet.num_sprites,
-                )[3]
-            )
-            self.sheet_90.append(
-                arcade.load_spritesheet(
-                    f"Assets/Player/{self.sheet.folder}/{self.sheet.filename}_{sprites}.png",
-                    self.sheet.x_px,
-                    self.sheet.y_px,
-                    self.sheet.col,
-                    self.sheet.num_sprites,
-                )[4]
-            )
-            self.sheet_135.append(
-                arcade.load_spritesheet(
-                    f"Assets/Player/{self.sheet.folder}/{self.sheet.filename}_{sprites}.png",
-                    self.sheet.x_px,
-                    self.sheet.y_px,
-                    self.sheet.col,
-                    self.sheet.num_sprites,
-                )[5]
-            )
-            self.sheet_180.append(
-                arcade.load_spritesheet(
-                    f"Assets/Player/{self.sheet.folder}/{self.sheet.filename}_{sprites}.png",
-                    self.sheet.x_px,
-                    self.sheet.y_px,
-                    self.sheet.col,
-                    self.sheet.num_sprites,
-                )[6]
-            )
-            self.sheet_225.append(
-                arcade.load_spritesheet(
-                    f"Assets/Player/{self.sheet.folder}/{self.sheet.filename}_{sprites}.png",
-                    self.sheet.x_px,
-                    self.sheet.y_px,
-                    self.sheet.col,
-                    self.sheet.num_sprites,
-                )[7]
-            )
-            self.sheet_270.append(
-                arcade.load_spritesheet(
-                    f"Assets/Player/{self.sheet.folder}/{self.sheet.filename}_{sprites}.png",
-                    self.sheet.x_px,
-                    self.sheet.y_px,
-                    self.sheet.col,
-                    self.sheet.num_sprites,
-                )[0]
-            )
-            self.sheet_315.append(
-                arcade.load_spritesheet(
-                    f"Assets/Player/{self.sheet.folder}/{self.sheet.filename}_{sprites}.png",
-                    self.sheet.x_px,
-                    self.sheet.y_px,
-                    self.sheet.col,
-                    self.sheet.num_sprites,
-                )[1]
-            )
-        self.current_texture = 0
-
-
 class Player(arcade.Sprite):
     def __init__(
             self, img_path: str, scale: float, lives: int, id: int, sheet: SpriteSheet
@@ -357,26 +242,6 @@ class EnemySprite(arcade.Sprite):
         self.weapon = WeaponSprite("./Assets/Player/cannon.png", 0.25)
 
         self.counter = 0
-
-    def draw_health_bar(self):
-        arcade.draw_rectangle_filled(
-            center_x=self.center_x,
-            center_y=self.center_y - (self.texture.height / 2),
-            width=self.texture.width,
-            height=3,
-            color=arcade.color.GREEN,
-        )
-
-        if self.health < self.max_health:
-            arcade.draw_rectangle_filled(
-                center_x=self.center_x,
-                center_y=self.center_y - (self.texture.height / 2),
-                width=self.texture.width
-                      * ((self.max_health - self.health) / self.max_health),
-                height=3,
-                color=arcade.color.RED,
-            )
-
 
 class MoveableSprite(arcade.Sprite):
     def __init__(self, image: str, scale: float, center_x: int, center_y: int):
