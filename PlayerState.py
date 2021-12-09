@@ -10,6 +10,7 @@ from dataclasses import dataclass
 class PlayerState:
     x_loc: float
     y_loc: float
+    weapon_angle: float
     points: int
     last_update: datetime.datetime
 
@@ -21,7 +22,10 @@ class PlayerMovement:
         arcade.key.UP: False,
         arcade.key.DOWN: False,
         arcade.key.LEFT: False,
-        arcade.key.RIGHT: False
+        arcade.key.RIGHT: False,
+        arcade.key.W: False,
+        arcade.key.S: False,
+        arcade.key.SPACE: False
     }
 
     def __str__(self):

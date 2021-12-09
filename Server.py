@@ -30,8 +30,21 @@ def process_player_movement(player_move: PlayerState.PlayerMovement, client_addr
     player_info.last_update = now
     delta_x = 0
     delta_y = 0
+    delta_weapon = 0
 
-    if player_move.keys[str(arcade.key.UP)]:
+    if player_move.keys[str(arcade.key.UP)] and player_move.keys[str(arcade.key.RIGHT)]:
+        delta_y = 3
+        delta_x = 3
+    elif player_move.keys[str(arcade.key.UP)] and player_move.keys[str(arcade.key.LEFT)]:
+        delta_y = 3
+        delta_x = -3
+    elif player_move.keys[str(arcade.key.DOWN)] and player_move.keys[str(arcade.key.LEFT)]:
+        delta_y = -3
+        delta_x = -3
+    elif player_move.keys[str(arcade.key.DOWN)] and player_move.keys[str(arcade.key.RIGHT)]:
+        delta_y = -3
+        delta_x = 3
+    elif player_move.keys[str(arcade.key.UP)]:
         delta_y = 3
     elif player_move.keys[str(arcade.key.DOWN)]:
         delta_y = -3
@@ -39,9 +52,14 @@ def process_player_movement(player_move: PlayerState.PlayerMovement, client_addr
         delta_x = -3
     elif player_move.keys[str(arcade.key.RIGHT)]:
         delta_x = 3
-
     player_info.x_loc += delta_x
     player_info.y_loc += delta_y
+
+    if player_move.keys[str(arcade.key.S)]:
+        delta_weapon = -3
+    elif player_move.keys[str(arcade.key.W)]:
+        delta_weapon = 3
+    player_info.weapon_angle += delta_weapon
 
 
 def main():
@@ -61,7 +79,7 @@ def main():
 
         if not client_address[0] in all_players:
             print(f"player: {client_address[0]} added")
-            first_player: PlayerState.PlayerState = PlayerState.PlayerState(80, 80, 0, datetime.datetime.now())
+            first_player: PlayerState.PlayerState = PlayerState.PlayerState(80, 80, 0, 0, datetime.datetime.now())
             all_players[client_address[0]] = first_player
 
 

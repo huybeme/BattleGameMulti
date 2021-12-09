@@ -228,38 +228,6 @@ class Player(arcade.Sprite):
         self.texture = sheet[frame]
 
 
-# class currently not used, used for CPU enemies
-class EnemySprite(arcade.Sprite):
-    def __init__(self, image: str, scale: float, max_health: int):
-        super().__init__(image)
-        self.max_health = max_health
-        self.health = max_health
-        self.scale = scale
-
-        self.weapon = WeaponSprite("./Assets/Player/cannon.png", 0.25)
-
-        self.counter = 0
-
-    def draw_health_bar(self):
-        arcade.draw_rectangle_filled(
-            center_x=self.center_x,
-            center_y=self.center_y - (self.texture.height / 2),
-            width=self.texture.width,
-            height=3,
-            color=arcade.color.GREEN,
-        )
-
-        if self.health < self.max_health:
-            arcade.draw_rectangle_filled(
-                center_x=self.center_x,
-                center_y=self.center_y - (self.texture.height / 2),
-                width=self.texture.width
-                      * ((self.max_health - self.health) / self.max_health),
-                height=3,
-                color=arcade.color.RED,
-            )
-
-
 class MoveableSprite(arcade.Sprite):
     def __init__(self, image: str, scale: float, center_x: int, center_y: int):
         super().__init__(image)
@@ -681,6 +649,10 @@ class TiledWindow(arcade.Window):
         self.round = 1
         self.SFX_chain_drop.play(0.9)
 
+        self.physics_engine_wall_p1 = arcade.PhysicsEngineSimple(
+            self.player_1, self.wall_list
+        )
+
         # Computer enemy setup
         # self.enemy_list = arcade.SpriteList()
         # self.enemy_bullet_list = arcade.SpriteList()
@@ -981,13 +953,6 @@ class TiledWindow(arcade.Window):
                     arcade.sound.Sound("./Assets/SFX/Explode.wav"), 0.5
                 )
 
-            # if hit computer enemy, do stuff
-            for enemy in hit_enemy:
-                enemy.health -= 1
-                if enemy.health <= 0:
-                    enemy.remove_from_sprite_lists()
-                    enemy.weapon.remove_from_sprite_lists()
-
         self.player_1.hit_box = [[-30, -30], [30, -30], [30, 30], [-30, 30]]
         self.player_2.hit_box = [[-30, -30], [30, -30], [30, 30], [-30, 30]]
 
@@ -1238,39 +1203,6 @@ class TiledWindow(arcade.Window):
                 self.explosion_list.append(explosion)
                 # enemy_bullet.remove_from_sprite_lists()
 
-        for enemy in self.enemy_list:
-            # generic movement control
-            if enemy.center_y > 500:
-                enemy.change_y = -1
-            elif enemy.center_y <= 270:
-                enemy.change_y = 1
-            enemy.center_y += enemy.change_y
-            enemy.weapon.set_position(enemy.center_x, enemy.center_y)
-
-            # weapon aiming
-            x_diff = self.player_1.center_x - enemy.center_x
-            y_diff = self.player_1.center_y - enemy.center_y
-            angle = math.atan2(y_diff, x_diff)
-            enemy.weapon.angle = math.degrees(angle)
-
-            # enemy shooting
-            enemy.counter += 1
-            if enemy.counter % 200 == 0:
-                bullet = BulletSprite(
-                    "./Assets/Player/spike_ball/spike_ball.png",
-                    5,
-                    0.15,
-                    game_window=self,
-                )
-                bullet.set_position(enemy.center_x, enemy.weapon.center_y)
-                bullet.change_x = (
-                        math.cos(math.radians(enemy.weapon.angle)) * PLAYER_SHOOT_SPEED
-                )
-                bullet.change_y = (
-                        math.sin(math.radians(enemy.weapon.angle)) * PLAYER_SHOOT_SPEED
-                )
-                self.enemy_bullet_list.append(bullet)
-
             # PLAYER 1 MOVEMENT
             # UP
         if self.player_1.direction[0] == True:
@@ -1443,7 +1375,6 @@ class TiledWindow(arcade.Window):
         dist_to_next_point = 10
         cf = 7
         if player.is_cannon_shooting:
-            # bullet.angle = self.player_1.weapon.angle   # not needed since our ammo is somewhat symmetrical
             bullet.change_x = (
                     math.cos(math.radians(player.weapon.angle)) * dist_to_next_point
             )
@@ -1598,6 +1529,7 @@ async def communication_with_server(client: game.TiledWindow, event_loop):  # cl
         player_info: PlayerState.PlayerState = player_dict[client.ip_addr]
         client.player_1.center_x = player_info.x_loc
         client.player_1.center_y = player_info.y_loc
+        client.player_1.weapon.angle = player_info.weapon_angle
 
 
 
