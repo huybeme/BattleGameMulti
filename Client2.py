@@ -1,21 +1,19 @@
-#                                                                                         ###
-#               Huy Le                                         Brenner Campos             ##
-#                                                                                         #
-###########################################################################################
-##########################################################################################
-#                                                                                   #####
-#                                                                                   ####
-#                                   BATTLE SHIPS                                    ###
-#                                                                                   ##
-#                                                                                   #
-#####################################################################################
-import math
+import datetime
+import game
 import arcade
-import pathlib
+import threading
+import asyncio
+import socket
+import json
+import PlayerState
+import math
 from typing import List
 from random import randint
+import pathlib
 
-import PlayerState
+CLIENT_ADDR = None
+SERVER_ADDR = None
+SERVER_PORT = None
 
 # ----@@@@--    CONSTANTS    --@@@@-------------------------------------------------//
 
@@ -91,122 +89,6 @@ class SpriteSheet(arcade.Sprite):
 
 
 # <><><>----- PLAYER CLASS  -------------------------------------------------------------------------<><><>
-
-class Player_1(arcade.Sprite):
-    def __init__(
-            self, scale: float, lives: int, id: int):
-        super().__init__()
-
-        sheet = None
-        if id == 1:
-            sheet = SpriteSheet("ship_sheets", "shipsheet", 128, 128, 4, 8, 7)
-            self.img_path = "./Assets/Player/pirateship.png"
-        elif id == 2:
-            sheet = SpriteSheet("lapras_sheet", "lapras_sheet", 95, 95, 4, 8, 3)
-            img_path = "./Assets/Player/lapras_start.png"
-            center_x = SCREEN_WIDTH - 64
-            center_y = SCREEN_HEIGHT - 64
-
-        self.score = 0
-        self.scale = scale
-        self.num_bullets = 3
-        self.player_id = id
-        self.lives = lives
-        self.is_shooting = False
-        self.is_cannon_shooting = False
-        self.face_angle = 90  # since we start off facing up
-        self.weapon = WeaponSprite("./Assets/Player/cannon.png", 0.25)
-
-
-        # facing directions
-        self.direction = [False, False, False, False]  # up, left, down, right
-        self.spritesheet = None
-
-        self.sheet = sheet
-        self.sheet_0 = []
-        self.sheet_45 = []
-        self.sheet_90 = []
-        self.sheet_135 = []
-        self.sheet_180 = []
-        self.sheet_225 = []
-        self.sheet_270 = []
-        self.sheet_315 = []
-        for sprites in range(self.sheet.num_files):
-            self.sheet_0.append(
-                arcade.load_spritesheet(
-                    f"Assets/Player/{self.sheet.folder}/{self.sheet.filename}_{sprites}.png",
-                    self.sheet.x_px,
-                    self.sheet.y_px,
-                    self.sheet.col,
-                    self.sheet.num_sprites,
-                )[2]
-            )
-            self.sheet_45.append(
-                arcade.load_spritesheet(
-                    f"Assets/Player/{self.sheet.folder}/{self.sheet.filename}_{sprites}.png",
-                    self.sheet.x_px,
-                    self.sheet.y_px,
-                    self.sheet.col,
-                    self.sheet.num_sprites,
-                )[3]
-            )
-            self.sheet_90.append(
-                arcade.load_spritesheet(
-                    f"Assets/Player/{self.sheet.folder}/{self.sheet.filename}_{sprites}.png",
-                    self.sheet.x_px,
-                    self.sheet.y_px,
-                    self.sheet.col,
-                    self.sheet.num_sprites,
-                )[4]
-            )
-            self.sheet_135.append(
-                arcade.load_spritesheet(
-                    f"Assets/Player/{self.sheet.folder}/{self.sheet.filename}_{sprites}.png",
-                    self.sheet.x_px,
-                    self.sheet.y_px,
-                    self.sheet.col,
-                    self.sheet.num_sprites,
-                )[5]
-            )
-            self.sheet_180.append(
-                arcade.load_spritesheet(
-                    f"Assets/Player/{self.sheet.folder}/{self.sheet.filename}_{sprites}.png",
-                    self.sheet.x_px,
-                    self.sheet.y_px,
-                    self.sheet.col,
-                    self.sheet.num_sprites,
-                )[6]
-            )
-            self.sheet_225.append(
-                arcade.load_spritesheet(
-                    f"Assets/Player/{self.sheet.folder}/{self.sheet.filename}_{sprites}.png",
-                    self.sheet.x_px,
-                    self.sheet.y_px,
-                    self.sheet.col,
-                    self.sheet.num_sprites,
-                )[7]
-            )
-            self.sheet_270.append(
-                arcade.load_spritesheet(
-                    f"Assets/Player/{self.sheet.folder}/{self.sheet.filename}_{sprites}.png",
-                    self.sheet.x_px,
-                    self.sheet.y_px,
-                    self.sheet.col,
-                    self.sheet.num_sprites,
-                )[0]
-            )
-            self.sheet_315.append(
-                arcade.load_spritesheet(
-                    f"Assets/Player/{self.sheet.folder}/{self.sheet.filename}_{sprites}.png",
-                    self.sheet.x_px,
-                    self.sheet.y_px,
-                    self.sheet.col,
-                    self.sheet.num_sprites,
-                )[1]
-            )
-        self.current_texture = 0
-
-
 class Player(arcade.Sprite):
     def __init__(
             self, img_path: str, scale: float, lives: int, id: int, sheet: SpriteSheet
@@ -414,7 +296,7 @@ class TiledWindow(arcade.Window):
         self.ip_addr = client_addr
         self.server_address = server_addr
         self.server_port = server_port
-        # self.actions = PlayerState.PlayerMovement()
+        self.actions = PlayerState.PlayerMovement()
         self.from_server = ""
 
         self.round = 1
@@ -465,7 +347,6 @@ class TiledWindow(arcade.Window):
             sheet=player_1_ss,
         )
         self.player_1.set_position(80, 80)
-        self.player_1.center_x = 80
         self.physics_engine_wall_p1 = arcade.PhysicsEngineSimple(
             self.player_1, self.wall_list
         )
@@ -1594,92 +1475,10 @@ class TiledWindow(arcade.Window):
         if (key in self.actions.keys):
             self.actions.keys[key] = True
 
-        # # player 1 controls
-        # if key == arcade.key.W:
-        #     # self.player_1.change_y = p1_movement_speed
-        #     self.player_1.direction[0] = True
-        # if key == arcade.key.S:
-        #     # self.player_1.change_y = -p1_movement_speed
-        #     self.player_1.direction[2] = True
-        # if key == arcade.key.A:
-        #     # self.player_1.change_x = -p1_movement_speed
-        #     self.player_1.direction[1] = True
-        # if key == arcade.key.D:
-        #     # self.player_1.change_x = p1_movement_speed
-        #     self.player_1.direction[3] = True
-        #
-        # if key == arcade.key.F:
-        #     self.player_1.weapon.change_angle = 3
-        # if key == arcade.key.G:
-        #     self.player_1.weapon.change_angle = -3
-        #
-        # if key == arcade.key.SPACE or key == arcade.key.R:
-        #     self.player_1.is_shooting = True
-        #     if key == arcade.key.R:
-        #         self.player_1.is_cannon_shooting = True
-        #
-        # # Player 2 controls
-        # if key == arcade.key.UP:
-        #     # self.player_2.change_y = p2_movement_speed
-        #     self.player_2.direction[0] = True
-        # if key == arcade.key.DOWN:
-        #     # self.player_2.change_y = -p2_movement_speed
-        #     self.player_2.direction[2] = True
-        # if key == arcade.key.LEFT:
-        #     # self.player_2.change_x = -p2_movement_speed
-        #     self.player_2.direction[1] = True
-        # if key == arcade.key.RIGHT:
-        #     # self.player_2.change_x = p2_movement_speed
-        #     self.player_2.direction[3] = True
-        #
-        # if key == arcade.key.PERIOD:
-        #     self.player_2.weapon.change_angle = 3
-        # if key == arcade.key.SLASH:
-        #     self.player_2.weapon.change_angle = -3
-        #
-        # if key == arcade.key.RCTRL or key == arcade.key.APOSTROPHE:
-        #     self.player_2.is_shooting = True
-        #     if key == arcade.key.APOSTROPHE:
-        #         self.player_2.is_cannon_shooting = True
-
     # ----- Key UP Events--------------------------------
     def on_key_release(self, key, modifiers):
         if (key in self.actions.keys):
             self.actions.keys[key] = False
-
-        # # player 1 controls
-        # if key == arcade.key.W:
-        #     self.player_1.change_y = 0
-        #     self.player_1.direction[0] = False
-        # if key == arcade.key.S:
-        #     self.player_1.change_y = 0
-        #     self.player_1.direction[2] = False
-        # if key == arcade.key.A:
-        #     self.player_1.change_x = 0
-        #     self.player_1.direction[1] = False
-        # if key == arcade.key.D:
-        #     self.player_1.change_x = 0
-        #     self.player_1.direction[3] = False
-        #
-        # if key == arcade.key.F or key == arcade.key.G:
-        #     self.player_1.weapon.change_angle = 0
-        #
-        # # player 2 controls
-        # if key == arcade.key.UP:
-        #     self.player_2.change_y = 0
-        #     self.player_2.direction[0] = False
-        # if key == arcade.key.DOWN:
-        #     self.player_2.change_y = 0
-        #     self.player_2.direction[2] = False
-        # if key == arcade.key.LEFT:
-        #     self.player_2.change_x = 0
-        #     self.player_2.direction[1] = False
-        # if key == arcade.key.RIGHT:
-        #     self.player_2.change_x = 0
-        #     self.player_2.direction[3] = False
-        #
-        # if key == arcade.key.PERIOD or key == arcade.key.SLASH:
-        #     self.player_2.weapon.change_angle = 0
 
     def random_power_up(self):
         random_x = randint(16, SCREEN_WIDTH - 16)
@@ -1766,13 +1565,57 @@ class TiledWindow(arcade.Window):
         self.post_whirlpool_list.append(self.post_whirlpool_sprite)
         whirlpool.remove_from_sprite_lists()
 
-# #  ////  ----- MAIN METHOD --------------------------------------------------------////
-# def main():
+def find_ip_address():
+    server_address = ""
+    connection = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        connection.connect(('10.255.255.255', 1))  # dummy address that doesn't need to be reached
+        server_address = connection.getsockname()[0]
+    except IOError:
+        server_address = '127.0.0.1'  # localhost loopback address
+    finally:
+        connection.close()
+    return server_address
 
-# window = TiledWindow(server_addr, client_addr)
-# window.setup()
-# arcade.run()
+def setup_client_connection(client: game.TiledWindow):
+    client_event_loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(client_event_loop)
+    client_event_loop.create_task(communication_with_server(client, client_event_loop))
+    client_event_loop.run_forever()
 
 
-# if __name__ == "__main__":
-#     main()
+async def communication_with_server(client: game.TiledWindow, event_loop):  # client pulls from TiledWindow class
+    UDPClientSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
+
+    while True:
+        keystate = json.dumps(client.actions.keys)  # unless there is something here, the next lines won't run
+        UDPClientSocket.sendto(str.encode(keystate), (client.server_address, int(client.server_port)))
+        data_packet = UDPClientSocket.recvfrom(1024)
+        data = data_packet[0]   # get the encoded string
+        decoded_data: PlayerState.GameState = PlayerState.GameState.from_json(data)
+
+        player_dict = decoded_data.player_states
+        player_info: PlayerState.PlayerState = player_dict[client.ip_addr]
+        client.player_1.center_x = player_info.x_loc
+        client.player_1.center_y = player_info.y_loc
+
+
+
+def main():
+
+    SERVER_ADDR = "10.0.0.241"
+    SERVER_PORT = "25001"
+
+    CLIENT_ADDR = find_ip_address()
+    # SERVER_ADDR = input("enter the IP address to the game server:\n")     # uncomment before submission
+    # SERVER_PORT = input("enter the port to the game server:\n")
+
+    window = TiledWindow(CLIENT_ADDR, SERVER_ADDR, SERVER_PORT)
+
+    client_thread = threading.Thread(target=setup_client_connection, args=(window,), daemon=True)
+    client_thread.start()
+    arcade.run()
+
+
+if __name__ == '__main__':
+    main()

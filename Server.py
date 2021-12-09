@@ -33,42 +33,37 @@ def process_player_movement(player_move: PlayerState.PlayerMovement, client_addr
 
     if player_move.keys[str(arcade.key.UP)]:
         delta_y = 3
-        print("pressed up")
     elif player_move.keys[str(arcade.key.DOWN)]:
         delta_y = -3
-        print("pressed down")
     elif player_move.keys[str(arcade.key.LEFT)]:
         delta_x = -3
-        print("pressed left")
     elif player_move.keys[str(arcade.key.RIGHT)]:
         delta_x = 3
-        print("pressed right")
 
     player_info.x_loc += delta_x
     player_info.y_loc += delta_y
 
 
 def main():
+
     server_address = find_ip_address()
     print(f"Server address is {server_address} on port {SERVER_PORT}")
+    gameState = PlayerState.GameState(all_players)
 
     # create a socket and bind it to the address and port
     UDPServerSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
     UDPServerSocket.bind((server_address, SERVER_PORT))
 
-    gameState = PlayerState.GameState(all_players)
-
     while(True):
-        data_packet = UDPServerSocket.recvfrom(1024)    # sets the packet size
+        data_packet = UDPServerSocket.recvfrom(1024)    # sets the packet size, next lines won't run until this receives
         message = data_packet[0]            # data stored here within tuple
         client_address = data_packet[1]     # client IP addr is stored here, nothing beyond [1]
 
         if not client_address[0] in all_players:
             print(f"player: {client_address[0]} added")
-            # need to somehow get center x and y from game to here instead of hard code 80 80
-            # first_player: PlayerState.PlayerState = PlayerState.PlayerState(game.TiledWindow.player_1.center_x, game.TiledWindow.player_1.center_y, 0, datetime.datetime.now())
             first_player: PlayerState.PlayerState = PlayerState.PlayerState(80, 80, 0, datetime.datetime.now())
             all_players[client_address[0]] = first_player
+
 
         json_data = json.loads(message)
         player_move: PlayerState.PlayerMovement = PlayerState.PlayerMovement()

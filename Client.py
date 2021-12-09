@@ -1,3 +1,5 @@
+import datetime
+
 import game
 import arcade
 import threading
@@ -9,6 +11,8 @@ import PlayerState
 CLIENT_ADDR = None
 SERVER_ADDR = None
 SERVER_PORT = None
+
+player_1 = game.Player_1(game.SPRITE_SCALING_PLAYER, 5, 1)
 
 def find_ip_address():
     server_address = ""
@@ -28,19 +32,21 @@ def setup_client_connection(client: game.TiledWindow):
     client_event_loop.create_task(communication_with_server(client, client_event_loop))
     client_event_loop.run_forever()
 
+
 async def communication_with_server(client: game.TiledWindow, event_loop):  # client pulls from TiledWindow class
     UDPClientSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
+
     while True:
-        keystate = json.dumps(client.actions.keys)
+        keystate = json.dumps(client.actions.keys)  # unless there is something here, the next lines won't run
         UDPClientSocket.sendto(str.encode(keystate), (client.server_address, int(client.server_port)))
         data_packet = UDPClientSocket.recvfrom(1024)
         data = data_packet[0]   # get the encoded string
         decoded_data: PlayerState.GameState = PlayerState.GameState.from_json(data)
+
         player_dict = decoded_data.player_states
         player_info: PlayerState.PlayerState = player_dict[client.ip_addr]
-
-        # game.TiledWindow.player_1.center_y = player_info.y_loc
-        # game.TiledWindow.player_1.center_x = player_info.x_loc
+        game.get_x_loc(player_info.x_loc)
+        game.TiledWindow.player_1.center_y = player_info.y_loc
 
 
 

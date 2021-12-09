@@ -8,8 +8,8 @@ from dataclasses import dataclass
 @dataclass_json     # the order of @ imports are important
 @dataclass
 class PlayerState:
-    x_loc: int
-    y_loc: int
+    x_loc: float
+    y_loc: float
     points: int
     last_update: datetime.datetime
 
