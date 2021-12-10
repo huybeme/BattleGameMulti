@@ -11,7 +11,8 @@ class PlayerState:
     id: int
     x_loc: float
     y_loc: float
-    points: int
+    score: int
+    lives: int
     face_angle: int
     face_shooting: bool
     weapon_angle: float
@@ -35,7 +36,7 @@ class PlayerMovement:
         arcade.key.D: False,
         arcade.key.E: False,
         arcade.key.SPACE: False,
-        arcade.key.KEY_0: False
+        arcade.key.NUM_0: False
     }
 
     def __str__(self):
