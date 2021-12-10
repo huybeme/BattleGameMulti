@@ -87,6 +87,7 @@ def main():
 
     addresses = []
 
+    # sort who is who for players
     while len(all_players) != 2:
         data_packet = UDPServerSocket.recvfrom(1024)    # sets the packet size, next lines won't run until this receives
         message = data_packet[0]            # data stored here within tuple
@@ -108,13 +109,14 @@ def main():
                 all_players[client_address[0]] = player2
                 addresses.append(client_address)
 
-
+        # get initial stuff from client, used to send data to client to determine who is who on client side
         json_data = json.loads(message)
         player_move: PlayerState.PlayerMovement = PlayerState.PlayerMovement()
         player_move.keys = json_data
         response = gameState.to_json()
         UDPServerSocket.sendto(str.encode(response), client_address)
 
+    # send list of IP addresses to client
     message = json.dumps(addresses)
     UDPServerSocket.sendto(str.encode(message), addresses[0])
     UDPServerSocket.sendto(str.encode(message), addresses[1])

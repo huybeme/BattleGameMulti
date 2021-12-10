@@ -1458,6 +1458,20 @@ class TiledWindow(arcade.Window):
         self.post_whirlpool_list.append(self.post_whirlpool_sprite)
         whirlpool.remove_from_sprite_lists()
 
+def get_ip_addresses(data):
+    ip_addresses = []
+    count = 1
+    while count < len(data) - 1:
+        if data[count] == '\"':
+            count += 1
+            ip = ""
+            while data[count] != "\"":
+                ip = ip + data[count]
+                count += 1
+            ip_addresses.append(ip)
+        count += 1
+    return ip_addresses
+
 def find_ip_address():
     server_address = ""
     connection = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -1480,34 +1494,29 @@ def setup_client_connection(client: TiledWindow):
 async def communication_with_server(client: TiledWindow, event_loop):  # client pulls from TiledWindow class
     UDPClientSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
 
+    # send stuff to server to get player id for player determination
     keystate = json.dumps(client.actions.keys)
     UDPClientSocket.sendto(str.encode(keystate), (client.server_address, int(client.server_port)))
     data_packet = UDPClientSocket.recvfrom(1024)
     data = data_packet[0]
     decoded_data: PlayerState.GameState = PlayerState.GameState.from_json(data)
+    player_dict = decoded_data.player_states
 
-    player_dict = decoded_data.player_states  # will contain all_players
-
+    # get list of ip addresses fro mserver
     data_packet, serveraddr = UDPClientSocket.recvfrom(1024)
     decoded_addresses = data_packet.decode()
-    addresses = data_packet[0]
+    ip_addresses = get_ip_addresses(decoded_addresses)
 
-    # player2_addr = None
-
+    # sort out who is who
+    player2_ip_addr = None
     if player_dict[client.ip_addr].id == 1:
         player = client.player_1
         player2 = client.player_2
-        # player2_addr = addresses[1]
+        player2_ip_addr = ip_addresses[1]
     else:
         player = client.player_2
         player2 = client.player_1
-        # player2_addr = addresses[0]
-    #
-    # # for i in decoded_addresses:
-    # #     print(i)
-    # print(decoded_addresses)
-    print(addresses)
-
+        player2_ip_addr = ip_addresses[0]
 
 
     while True:
@@ -1525,7 +1534,7 @@ async def communication_with_server(client: TiledWindow, event_loop):  # client 
         player.face_angle = player1_info.face_angle
         player.is_shooting = player1_info.shooting
 
-        player2_info: PlayerState.PlayerState = player_dict["10.0.0.252"]
+        player2_info: PlayerState.PlayerState = player_dict[player2_ip_addr]
         player2.center_x = player2_info.x_loc
         player2.center_y = player2_info.y_loc
         player2.weapon.angle = player2_info.weapon_angle
