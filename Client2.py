@@ -1506,6 +1506,7 @@ async def communication_with_server(client: TiledWindow, event_loop):  # client 
     data_packet, serveraddr = UDPClientSocket.recvfrom(1024)
     decoded_addresses = data_packet.decode()
     ip_addresses = get_ip_addresses(decoded_addresses)
+    print("ready to play")
 
     # sort out who is who
     player2_ip_addr = None
@@ -1532,14 +1533,16 @@ async def communication_with_server(client: TiledWindow, event_loop):  # client 
         player.center_y = player1_info.y_loc
         player.weapon.angle = player1_info.weapon_angle
         player.face_angle = player1_info.face_angle
-        player.is_shooting = player1_info.shooting
+        player.is_shooting = player1_info.face_shooting
+        player.is_cannon_shooting = player1_info.weapon_shooting
 
         player2_info: PlayerState.PlayerState = player_dict[player2_ip_addr]
         player2.center_x = player2_info.x_loc
         player2.center_y = player2_info.y_loc
         player2.weapon.angle = player2_info.weapon_angle
         player2.face_angle = player2_info.face_angle
-        player2.is_shooting = player2_info.shooting
+        player2.is_shooting = player2_info.face_shooting
+        player2.is_cannon_shooting = player2_info.weapon_shooting
 
 
 

@@ -73,7 +73,9 @@ def process_player_movement(player_move: PlayerState.PlayerMovement, client_addr
 
     player_info.shooting = False
     if player_move.keys[str(arcade.key.SPACE)]:
-        player_info.shooting = True
+        player_info.weapon_shooting = True
+    elif player_move.keys[str(arcade.key.KEY_0)]:
+        player_info.face_shooting = True
 
 def main():
 
@@ -97,14 +99,14 @@ def main():
             if len(all_players) < 1:
                 print(f"player 1: {client_address[0]} added")
                 player1: PlayerState.PlayerState = PlayerState.PlayerState(
-                    id=1, x_loc=80, y_loc=80, points=0, face_angle=90, weapon_angle=0, shooting=False, last_update=datetime.datetime.now()
+                    id=1, x_loc=80, y_loc=80, points=0, face_angle=90, weapon_angle=0, face_shooting=False, weapon_shooting=False, last_update=datetime.datetime.now()
                 )
                 all_players[client_address[0]] = player1
                 addresses.append(client_address)
             elif len(all_players) == 1:
                 print(f"player 2: {client_address[0]} added")
                 player2: PlayerState.PlayerState = PlayerState.PlayerState(
-                   id=2, x_loc=Client2.SCREEN_WIDTH - 64, y_loc=Client2.SCREEN_HEIGHT - 64, points=0, face_angle=270, weapon_angle=0, shooting=False, last_update=datetime.datetime.now()
+                   id=2, x_loc=Client2.SCREEN_WIDTH - 64, y_loc=Client2.SCREEN_HEIGHT - 64, points=0, face_angle=270, weapon_angle=0, face_shooting=False, weapon_shooting=False, last_update=datetime.datetime.now()
                 )
                 all_players[client_address[0]] = player2
                 addresses.append(client_address)

@@ -13,8 +13,9 @@ class PlayerState:
     y_loc: float
     points: int
     face_angle: int
+    face_shooting: bool
     weapon_angle: float
-    shooting: bool
+    weapon_shooting: bool
     last_update: datetime.datetime
 
 
@@ -33,7 +34,8 @@ class PlayerMovement:
         arcade.key.A: False,
         arcade.key.D: False,
         arcade.key.E: False,
-        arcade.key.SPACE: False
+        arcade.key.SPACE: False,
+        arcade.key.KEY_0: False
     }
 
     def __str__(self):
