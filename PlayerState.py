@@ -5,18 +5,19 @@ from dataclasses_json import dataclass_json
 from dataclasses import dataclass
 
 
-@dataclass_json     # the order of @ imports are important
+@dataclass_json  # the order of @ imports are important
 @dataclass
 class PlayerState:
+    id: int
     x_loc: float
     y_loc: float
     points: int
     face_angle: int
-
     weapon_angle: float
     shooting: bool
-
     last_update: datetime.datetime
+
+
 
 @dataclass_json
 @dataclass
@@ -38,7 +39,6 @@ class PlayerMovement:
     def __str__(self):
         return f"UP: {self.keys[arcade.key.UP]}, Down: {self.keys[arcade.key.DOWN]}" \
                f", Left: {self.keys[arcade.key.LEFT]}, Right: {self.keys[arcade.key.RIGHT]}, "
-
 
 
 @dataclass_json

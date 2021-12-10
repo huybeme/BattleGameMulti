@@ -4,6 +4,7 @@ import PlayerState
 from typing import Dict
 import datetime
 import arcade
+import Client2
 import math
 
 
@@ -64,8 +65,6 @@ def process_player_movement(player_move: PlayerState.PlayerMovement, client_addr
     player_info.y_loc += delta_y
 
     delta_weapon = 0
-    dist_to_next_point = 10
-    cf = 7
     if player_move.keys[str(arcade.key.S)] or player_move.keys[str(arcade.key.A)]:
         delta_weapon = -3
     elif player_move.keys[str(arcade.key.W)] or player_move.keys[str(arcade.key.D)]:
@@ -86,20 +85,28 @@ def main():
     UDPServerSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
     UDPServerSocket.bind((server_address, SERVER_PORT))
 
+
     while(True):
         data_packet = UDPServerSocket.recvfrom(1024)    # sets the packet size, next lines won't run until this receives
         message = data_packet[0]            # data stored here within tuple
         client_address = data_packet[1]     # client IP addr is stored here, nothing beyond [1]
 
-        if not client_address[0] in all_players:
-            print(f"player: {client_address[0]} added")
-            first_player: PlayerState.PlayerState = PlayerState.PlayerState(
-                x_loc=80, y_loc=80, points=0, face_angle=90, weapon_angle=0, shooting=False, last_update=datetime.datetime.now()
-            )
-            all_players[client_address[0]] = first_player
+        if not client_address[0] in all_players and len(all_players) < 2:
+            if len(all_players) < 1:
+                print(f"player 1: {client_address[0]} added")
+                player1: PlayerState.PlayerState = PlayerState.PlayerState(
+                    id=1, x_loc=80, y_loc=80, points=0, face_angle=90, weapon_angle=0, shooting=False, last_update=datetime.datetime.now()
+                )
+                all_players[client_address[0]] = player1
+            elif len(all_players) == 1:
+                print(f"player 2: {client_address[0]} added")
+                player2: PlayerState.PlayerState = PlayerState.PlayerState(
+                   id=2, x_loc=Client2.SCREEN_WIDTH - 64, y_loc=Client2.SCREEN_HEIGHT - 64, points=0, face_angle=90, weapon_angle=0, shooting=False, last_update=datetime.datetime.now()
+                )
+                all_players[client_address[0]] = player2
+
 
         json_data = json.loads(message)
-
         player_move: PlayerState.PlayerMovement = PlayerState.PlayerMovement()
         player_move.keys = json_data
         process_player_movement(player_move, client_address, gameState)
