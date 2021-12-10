@@ -85,6 +85,39 @@ def main():
     UDPServerSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
     UDPServerSocket.bind((server_address, SERVER_PORT))
 
+    addresses = []
+
+    while len(all_players) != 2:
+        data_packet = UDPServerSocket.recvfrom(1024)    # sets the packet size, next lines won't run until this receives
+        message = data_packet[0]            # data stored here within tuple
+        client_address = data_packet[1]     # client IP addr is stored here, nothing beyond [1]
+
+        if not client_address[0] in all_players and len(all_players) < 2:
+            if len(all_players) < 1:
+                print(f"player 1: {client_address[0]} added")
+                player1: PlayerState.PlayerState = PlayerState.PlayerState(
+                    id=1, x_loc=80, y_loc=80, points=0, face_angle=90, weapon_angle=0, shooting=False, last_update=datetime.datetime.now()
+                )
+                all_players[client_address[0]] = player1
+                addresses.append(client_address)
+            elif len(all_players) == 1:
+                print(f"player 2: {client_address[0]} added")
+                player2: PlayerState.PlayerState = PlayerState.PlayerState(
+                   id=2, x_loc=Client2.SCREEN_WIDTH - 64, y_loc=Client2.SCREEN_HEIGHT - 64, points=0, face_angle=270, weapon_angle=0, shooting=False, last_update=datetime.datetime.now()
+                )
+                all_players[client_address[0]] = player2
+                addresses.append(client_address)
+
+
+        json_data = json.loads(message)
+        player_move: PlayerState.PlayerMovement = PlayerState.PlayerMovement()
+        player_move.keys = json_data
+        response = gameState.to_json()
+        UDPServerSocket.sendto(str.encode(response), client_address)
+
+    message = json.dumps(addresses)
+    UDPServerSocket.sendto(str.encode(message), addresses[0])
+    UDPServerSocket.sendto(str.encode(message), addresses[1])
 
     while(True):
         data_packet = UDPServerSocket.recvfrom(1024)    # sets the packet size, next lines won't run until this receives
@@ -101,7 +134,7 @@ def main():
             elif len(all_players) == 1:
                 print(f"player 2: {client_address[0]} added")
                 player2: PlayerState.PlayerState = PlayerState.PlayerState(
-                   id=2, x_loc=Client2.SCREEN_WIDTH - 64, y_loc=Client2.SCREEN_HEIGHT - 64, points=0, face_angle=90, weapon_angle=0, shooting=False, last_update=datetime.datetime.now()
+                   id=2, x_loc=Client2.SCREEN_WIDTH - 64, y_loc=Client2.SCREEN_HEIGHT - 64, points=0, face_angle=270, weapon_angle=0, shooting=False, last_update=datetime.datetime.now()
                 )
                 all_players[client_address[0]] = player2
 

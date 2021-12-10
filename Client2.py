@@ -1480,20 +1480,26 @@ def setup_client_connection(client: TiledWindow):
 async def communication_with_server(client: TiledWindow, event_loop):  # client pulls from TiledWindow class
     UDPClientSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
 
-    keystate = json.dumps(client.actions.keys)  # unless there is something here, the next lines won't run
+    keystate = json.dumps(client.actions.keys)
     UDPClientSocket.sendto(str.encode(keystate), (client.server_address, int(client.server_port)))
     data_packet = UDPClientSocket.recvfrom(1024)
-    data = data_packet[0]  # get the encoded string
+    data = data_packet[0]
     decoded_data: PlayerState.GameState = PlayerState.GameState.from_json(data)
 
     player_dict = decoded_data.player_states  # will contain all_players
+
+    data_packet = UDPClientSocket.recvfrom(1024)
+    addresses = data_packet[0]
+    print(addresses)
+
     if player_dict[client.ip_addr].id == 1:
         player = client.player_1
     else:
         player = client.player_2
 
+
     while True:
-        keystate = json.dumps(client.actions.keys)  # unless there is something here, the next lines won't run
+        keystate = json.dumps(client.actions.keys)
         UDPClientSocket.sendto(str.encode(keystate), (client.server_address, int(client.server_port)))
         data_packet = UDPClientSocket.recvfrom(1024)
         data = data_packet[0]   # get the encoded string
