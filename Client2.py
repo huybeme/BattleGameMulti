@@ -1496,9 +1496,11 @@ async def communication_with_server(client: TiledWindow, event_loop):  # client 
 
     if player_dict[client.ip_addr].id == 1:
         player = client.player_1
+        player2 = client.player_2
         # player2_addr = addresses[1]
     else:
         player = client.player_2
+        player2 = client.player_1
         # player2_addr = addresses[0]
     #
     # # for i in decoded_addresses:
@@ -1524,11 +1526,11 @@ async def communication_with_server(client: TiledWindow, event_loop):  # client 
         player.is_shooting = player1_info.shooting
 
         player2_info: PlayerState.PlayerState = player_dict["10.0.0.252"]
-        player.center_x = player2_info.x_loc
-        player.center_y = player2_info.y_loc
-        player.weapon.angle = player2_info.weapon_angle
-        player.face_angle = player2_info.face_angle
-        player.is_shooting = player2_info.shooting
+        player2.center_x = player2_info.x_loc
+        player2.center_y = player2_info.y_loc
+        player2.weapon.angle = player2_info.weapon_angle
+        player2.face_angle = player2_info.face_angle
+        player2.is_shooting = player2_info.shooting
 
 
 
