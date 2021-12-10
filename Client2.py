@@ -1488,14 +1488,24 @@ async def communication_with_server(client: TiledWindow, event_loop):  # client 
 
     player_dict = decoded_data.player_states  # will contain all_players
 
-    data_packet = UDPClientSocket.recvfrom(1024)
+    data_packet, serveraddr = UDPClientSocket.recvfrom(1024)
+    decoded_addresses = data_packet.decode()
     addresses = data_packet[0]
-    print(addresses)
+
+    # player2_addr = None
 
     if player_dict[client.ip_addr].id == 1:
         player = client.player_1
+        # player2_addr = addresses[1]
     else:
         player = client.player_2
+        # player2_addr = addresses[0]
+    #
+    # # for i in decoded_addresses:
+    # #     print(i)
+    # print(decoded_addresses)
+    print(addresses)
+
 
 
     while True:
@@ -1506,12 +1516,19 @@ async def communication_with_server(client: TiledWindow, event_loop):  # client 
         decoded_data: PlayerState.GameState = PlayerState.GameState.from_json(data)
 
         player_dict = decoded_data.player_states    # will contain all_players
-        player_info: PlayerState.PlayerState = player_dict[client.ip_addr]  # get info of your ip
-        player.center_x = player_info.x_loc
-        player.center_y = player_info.y_loc
-        player.weapon.angle = player_info.weapon_angle
-        player.face_angle = player_info.face_angle
-        player.is_shooting = player_info.shooting
+        player1_info: PlayerState.PlayerState = player_dict[client.ip_addr]  # get info of your ip
+        player.center_x = player1_info.x_loc
+        player.center_y = player1_info.y_loc
+        player.weapon.angle = player1_info.weapon_angle
+        player.face_angle = player1_info.face_angle
+        player.is_shooting = player1_info.shooting
+
+        player2_info: PlayerState.PlayerState = player_dict["10.0.0.252"]
+        player.center_x = player2_info.x_loc
+        player.center_y = player2_info.y_loc
+        player.weapon.angle = player2_info.weapon_angle
+        player.face_angle = player2_info.face_angle
+        player.is_shooting = player2_info.shooting
 
 
 
