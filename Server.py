@@ -7,24 +7,25 @@ import arcade
 import Client2
 import math
 
-
-
 SERVER_PORT = 25001
 all_players: Dict[str, PlayerState.PlayerState] = {}
+
 
 def find_ip_address():
     server_address = ""
     connection = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     try:
-        connection.connect(('10.255.255.255', 1))   # dummy address that doesn't need to be reached
+        connection.connect(('10.255.255.255', 1))  # dummy address that doesn't need to be reached
         server_address = connection.getsockname()[0]
     except IOError:
-        server_address = '127.0.0.1'    # localhost loopback address
+        server_address = '127.0.0.1'  # localhost loopback address
     finally:
         connection.close()
     return server_address
 
-def process_player_movement(player_move: PlayerState.PlayerMovement, client_address: str, gamestate: PlayerState.GameState):
+
+def process_player_movement(player_move: PlayerState.PlayerMovement, client_address: str,
+                            gamestate: PlayerState.GameState):
     player_info = gamestate.player_states[client_address[0]]
     now = datetime.datetime.now()
     if player_info.last_update + datetime.timedelta(milliseconds=20) > now:
@@ -75,11 +76,11 @@ def process_player_movement(player_move: PlayerState.PlayerMovement, client_addr
     player_info.face_shooting = False
     if player_move.keys[str(arcade.key.SPACE)]:
         player_info.weapon_shooting = True
-    elif player_move.keys[str(arcade.key.NUM_0)]:
+    elif player_move.keys[str(arcade.key.RCTRL)]:
         player_info.face_shooting = True
 
-def main():
 
+def main():
     server_address = find_ip_address()
     print(f"Server address is {server_address} on port {SERVER_PORT}")
     gameState = PlayerState.GameState(all_players)
@@ -92,22 +93,26 @@ def main():
 
     # sort who is who for players
     while len(all_players) != 2:
-        data_packet = UDPServerSocket.recvfrom(1024)    # sets the packet size, next lines won't run until this receives
-        message = data_packet[0]            # data stored here within tuple
-        client_address = data_packet[1]     # client IP addr is stored here, nothing beyond [1]
+        data_packet = UDPServerSocket.recvfrom(1024)  # sets the packet size, next lines won't run until this receives
+        message = data_packet[0]  # data stored here within tuple
+        client_address = data_packet[1]  # client IP addr is stored here, nothing beyond [1]
 
         if not client_address[0] in all_players and len(all_players) < 2:
             if len(all_players) < 1:
                 print(f"player 1: {client_address[0]} added")
                 player1: PlayerState.PlayerState = PlayerState.PlayerState(
-                    id=1, x_loc=80, y_loc=80, score=0, lives=5, face_angle=90, weapon_angle=0, face_shooting=False, weapon_shooting=False, last_update=datetime.datetime.now()
+                    id=1, x_loc=80, y_loc=80, face_angle=90, weapon_angle=0, face_shooting=False, weapon_shooting=False,
+                    last_update=datetime.datetime.now(),
+                    bullet_delay=datetime.datetime.now()
                 )
                 all_players[client_address[0]] = player1
                 addresses.append(client_address)
             elif len(all_players) == 1:
                 print(f"player 2: {client_address[0]} added")
                 player2: PlayerState.PlayerState = PlayerState.PlayerState(
-                   id=2, x_loc=Client2.SCREEN_WIDTH - 64, y_loc=Client2.SCREEN_HEIGHT - 64, score=0, lives=5, face_angle=270, weapon_angle=0, face_shooting=False, weapon_shooting=False, last_update=datetime.datetime.now()
+                    id=2, x_loc=Client2.SCREEN_WIDTH - 64, y_loc=Client2.SCREEN_HEIGHT - 64, face_angle=270,
+                    weapon_angle=0, face_shooting=False, weapon_shooting=False, last_update=datetime.datetime.now(),
+                    bullet_delay=datetime.datetime.now()
                 )
                 all_players[client_address[0]] = player2
                 addresses.append(client_address)
@@ -124,25 +129,10 @@ def main():
     UDPServerSocket.sendto(str.encode(message), addresses[0])
     UDPServerSocket.sendto(str.encode(message), addresses[1])
 
-    while(True):
-        data_packet = UDPServerSocket.recvfrom(1024)    # sets the packet size, next lines won't run until this receives
-        message = data_packet[0]            # data stored here within tuple
-        client_address = data_packet[1]     # client IP addr is stored here, nothing beyond [1]
-
-        if not client_address[0] in all_players and len(all_players) < 2:
-            if len(all_players) < 1:
-                print(f"player 1: {client_address[0]} added")
-                player1: PlayerState.PlayerState = PlayerState.PlayerState(
-                    id=1, x_loc=80, y_loc=80, score=0, lives=5, face_angle=90, weapon_angle=0, face_shooting=False, last_update=datetime.datetime.now()
-                )
-                all_players[client_address[0]] = player1
-            elif len(all_players) == 1:
-                print(f"player 2: {client_address[0]} added")
-                player2: PlayerState.PlayerState = PlayerState.PlayerState(
-                   id=2, x_loc=Client2.SCREEN_WIDTH - 64, y_loc=Client2.SCREEN_HEIGHT - 64, score=0, lives=5, face_angle=270, weapon_angle=0, weapon_shooting=False, last_update=datetime.datetime.now()
-                )
-                all_players[client_address[0]] = player2
-
+    while (True):
+        data_packet = UDPServerSocket.recvfrom(1024)  # sets the packet size, next lines won't run until this receives
+        message = data_packet[0]  # data stored here within tuple
+        client_address = data_packet[1]  # client IP addr is stored here, nothing beyond [1]
 
         json_data = json.loads(message)
         player_move: PlayerState.PlayerMovement = PlayerState.PlayerMovement()
@@ -150,6 +140,7 @@ def main():
         process_player_movement(player_move, client_address, gameState)
         response = gameState.to_json()
         UDPServerSocket.sendto(str.encode(response), client_address)
+
 
 if __name__ == '__main__':
     main()

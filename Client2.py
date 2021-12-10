@@ -90,7 +90,7 @@ class SpriteSheet(arcade.Sprite):
 # <><><>----- PLAYER CLASS  -------------------------------------------------------------------------<><><>
 class Player(arcade.Sprite):
     def __init__(
-            self, img_path: str, scale: float, lives: int, id: int, sheet: SpriteSheet
+            self, img_path: str, scale: float, lives: int, id: int, sheet: SpriteSheet, face: int
     ):
         super().__init__(img_path)
         self.score = 0
@@ -100,7 +100,7 @@ class Player(arcade.Sprite):
         self.lives = lives
         self.is_shooting = False
         self.is_cannon_shooting = False
-        self.face_angle = 90  # since we start off facing up
+        self.face_angle = face  # since we start off facing up
         self.weapon = WeaponSprite("./Assets/Player/cannon.png", 0.25)
 
         # facing directions
@@ -330,6 +330,7 @@ class TiledWindow(arcade.Window):
             lives=5,
             id=1,
             sheet=player_1_ss,
+            face=90
         )
         self.player_1.set_position(80, 80)
         self.physics_engine_wall_p1 = arcade.PhysicsEngineSimple(
@@ -341,7 +342,8 @@ class TiledWindow(arcade.Window):
 
         player_2_ss = SpriteSheet("lapras_sheet", "lapras_sheet", 95, 95, 4, 8, 3)
         self.player_2 = Player(
-            "./Assets/Player/lapras_start.png", 1, lives=5, id=2, sheet=player_2_ss
+            "./Assets/Player/lapras_start.png", 1, lives=5, id=2, sheet=player_2_ss,
+            face=270
         )
         self.physics_engine_wall_p2 = arcade.PhysicsEngineSimple(
             self.player_2, self.wall_list
