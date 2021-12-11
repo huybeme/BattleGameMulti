@@ -12,8 +12,8 @@ class PlayerState:
     x_loc: float
     y_loc: float
     face_angle: int
-    face_shooting: bool
     weapon_angle: float
+    shooting: bool
     weapon_shooting: bool
     last_update: datetime.datetime
     bullet_delay: datetime.datetime
@@ -43,5 +43,6 @@ class PlayerMovement:
 @dataclass
 class GameState:
     player_states: Dict[str, PlayerState]
+    # barrel_state: Dict[str, BarrelState]
     # need a game state to keep track of gameover and/or round so proper resets happen
     # in the game on the client side

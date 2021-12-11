@@ -1504,7 +1504,7 @@ async def communication_with_server(client: TiledWindow, event_loop):  # client 
     decoded_data: PlayerState.GameState = PlayerState.GameState.from_json(data)
     player_dict = decoded_data.player_states
 
-    # get list of ip addresses fro mserver
+    # get list of ip addresses from server
     data_packet, serveraddr = UDPClientSocket.recvfrom(1024)
     decoded_addresses = data_packet.decode()
     ip_addresses = get_ip_addresses(decoded_addresses)
@@ -1530,12 +1530,13 @@ async def communication_with_server(client: TiledWindow, event_loop):  # client 
         decoded_data: PlayerState.GameState = PlayerState.GameState.from_json(data)
 
         player_dict = decoded_data.player_states    # will contain all_players
+
         player1_info: PlayerState.PlayerState = player_dict[client.ip_addr]  # get info of your ip
         player.center_x = player1_info.x_loc
         player.center_y = player1_info.y_loc
         player.weapon.angle = player1_info.weapon_angle
         player.face_angle = player1_info.face_angle
-        player.is_shooting = player1_info.face_shooting
+        player.is_shooting = player1_info.shooting
         player.is_cannon_shooting = player1_info.weapon_shooting
 
         player2_info: PlayerState.PlayerState = player_dict[player2_ip_addr]
@@ -1543,7 +1544,7 @@ async def communication_with_server(client: TiledWindow, event_loop):  # client 
         player2.center_y = player2_info.y_loc
         player2.weapon.angle = player2_info.weapon_angle
         player2.face_angle = player2_info.face_angle
-        player2.is_shooting = player2_info.face_shooting
+        player2.is_shooting = player2_info.shooting
         player2.is_cannon_shooting = player2_info.weapon_shooting
 
 
