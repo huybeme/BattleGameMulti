@@ -175,7 +175,7 @@ def main():
         response = gameState.to_json()
         UDPServerSocket.sendto(str.encode(response), client_address)
 
-    initialize_map()
+    # initialize_map()
 
     # send list of IP addresses to client
     message = json.dumps(addresses)

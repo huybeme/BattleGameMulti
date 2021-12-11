@@ -98,7 +98,7 @@ class Player(arcade.Sprite):
         self.num_bullets = 3
         self.player_id = id
         self.lives = lives
-        self.level_clear_flag = False
+        self.level_reset_flag = False
         self.is_shooting = False
         self.is_cannon_shooting = False
         self.face_angle = face  # since we start off facing up
@@ -665,8 +665,8 @@ class TiledWindow(arcade.Window):
             self.player_1.num_bullets = 3
             self.player_2.num_bullets = 3
             self.clear_flag = True
-            self.player_1.level_clear_flag = True
-            self.player_2.level_clear_flag = True
+            self.player_1.level_reset_flag = True
+            self.player_2.level_reset_flag = True
 
         self.round += 1
         arcade.sound.play_sound(arcade.Sound("./Assets/SFX/Lip_Pop.wav"), 8)
@@ -1205,7 +1205,7 @@ class TiledWindow(arcade.Window):
                     self.p2_total_movement_speed + self.p2_movement_speed_extra
             )
 
-        if self.player_1.level_clear_flag:
+        if self.player_1.level_reset_flag:
             for pre_whirlpool in self.pre_whirlpool_list:
                 pre_whirlpool.remove_from_sprite_lists()
                 self.pre_whirlpool_list.update()
@@ -1521,13 +1521,13 @@ async def communication_with_server(client: TiledWindow, event_loop):  # client 
         # PLAYER 1 -------------------------------------------------------------
         player1_info: PlayerState.PlayerState = player_dict[client.ip_addr]  # get info of your ip
 
-        if not player1_info.level_clear_flag:
+        if not player.level_reset_flag:
             player.center_x = player1_info.x_loc
             player.center_y = player1_info.y_loc
         else:
             player.center_x = 80
             player.center_y = 80
-            player1_info.level_clear_flag = False
+            player.level_reset_flag = False
 
         player.weapon.angle = player1_info.weapon_angle
         player.face_angle = player1_info.face_angle
@@ -1538,13 +1538,13 @@ async def communication_with_server(client: TiledWindow, event_loop):  # client 
         # PLAYER 2 -------------------------------------------------------------
         player2_info: PlayerState.PlayerState = player_dict[player2_ip_addr]
 
-        if not player2_info.level_clear_flag:
+        if not player2.level_reset_flag:
             player2.center_x = player2_info.x_loc
             player2.center_y = player2_info.y_loc
         else:
             player2.center_x = SCREEN_WIDTH - 64
-            player.center_y = SCREEN_HEIGHT - 64
-            player2_info.level_clear_flag = False
+            player2.center_y = SCREEN_HEIGHT - 64
+            player2.level_reset_flag = False
 
         player2.weapon.angle = player2_info.weapon_angle
         player2.face_angle = player2_info.face_angle
@@ -1566,7 +1566,7 @@ def main():
 
     client_thread = threading.Thread(target=setup_client_connection, args=(window,), daemon=True)
     client_thread.start()
-    arcade.set_window(window)
+    # arcade.set_window(window)
     arcade.run()
 
 
