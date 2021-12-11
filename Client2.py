@@ -283,7 +283,11 @@ class TiledWindow(arcade.Window):
         self.server_address = server_addr
         self.server_port = server_port
         self.actions = PlayerState.PlayerMovement()
-        self.player_actions = PlayerState.PlayerState()
+        self.player_actions = PlayerState.PlayerState(
+            id=1, x_loc=0, y_loc=0, face_angle=0,weapon_angle=0,
+            shooting=False, weapon_shooting=False,
+            level_reset=False, last_update=datetime.datetime.now(),
+            bullet_delay=datetime.datetime.now())
         self.from_server = ""
 
         self.round = 1
