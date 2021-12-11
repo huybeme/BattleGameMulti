@@ -371,8 +371,6 @@ class TiledWindow(arcade.Window):
         self.post_whirlpool_list = arcade.SpriteList()
         self.post_whirlpool_sprite = None
 
-        # Objects
-
         # MAP 1
         self.barrel_1 = arcade.AnimatedTimeBasedSprite(
             "./Assets/World/Objects/Barrel/SPR_Barrel_0.png",
@@ -627,22 +625,9 @@ class TiledWindow(arcade.Window):
             self.explosion.append(sprite)
 
         # -------- SOUND FX -------------------------------------------------------------V
-        self.SFX_basic_shot = arcade.load_sound("Assets/SFX/Basic_Shot.wav")
-        self.SFX_big_explosion = arcade.load_sound("Assets/SFX/Big_Explosion.wav")
-        self.SFX_bottle_up = arcade.load_sound("Assets/SFX/Bottle_Up.wav")
         self.SFX_bubble = arcade.load_sound("Assets/SFX/Bubble.wav")
         self.SFX_chain_drop = arcade.load_sound("Assets/SFX/Chain_Drop.wav")
-        self.SFX_explode = arcade.load_sound("Assets/SFX/Explode.wav")
-        self.SFX_high_ring = arcade.load_sound("Assets/SFX/High_Ring.wav")
-        self.SFX_large_shot = arcade.load_sound("Assets/SFX/Large_Shot.wav")
-        self.SFX_lip_pop = arcade.load_sound("Assets/SFX/Lip_Pop.wav")
         self.SFX_magic_time = arcade.load_sound("Assets/SFX/Magic_Time.wav")
-        self.SFX_magic_time_2 = arcade.load_sound("Assets/SFX/Magic_Time_2.wav")
-        self.SFX_quasar_beam = arcade.load_sound("Assets/SFX/Quasar_Beam.wav")
-        self.SFX_quick_charge = arcade.load_sound("Assets/SFX/Quick_Charge.wav")
-        self.SFX_short_shot = arcade.load_sound("Assets/SFX/Short_Shot.wav")
-        self.SFX_shot_hit = arcade.load_sound("Assets/SFX/Shot_Hit.wav")
-        self.SFX_space_burst = arcade.load_sound("Assets/SFX/Space_Burst.wav")
 
         # --- POWER-UPS -----------------------------------------------------------------------------//
         self.power_up_list = arcade.SpriteList()
@@ -667,7 +652,6 @@ class TiledWindow(arcade.Window):
             self.player_1, self.wall_list
         )
 
-        # --- PHYSICS ----------------------------------------------------------------------------//
         self.physics_engine_wall = arcade.PhysicsEngineSimple(
             self.player_1, self.wall_list
         )
@@ -958,7 +942,7 @@ class TiledWindow(arcade.Window):
                             self.player_1.lives -= 1
                 bullet.remove_from_sprite_lists()
                 arcade.sound.play_sound(
-                    arcade.sound.Sound("./Assets/SFX/Explode.wav"), 0.5
+                    arcade.sound.Sound("./Assets/SFX/Explode.wav"), 0.3
                 )
 
         self.player_1.hit_box = [[-30, -30], [30, -30], [30, 30], [-30, 30]]
@@ -1360,7 +1344,7 @@ class TiledWindow(arcade.Window):
         self.player_bullet_list.append(bullet)
         player.num_bullets -= 1
         arcade.sound.play_sound(
-            arcade.sound.Sound("./Assets/SFX/bang-sfx/cannon_02.wav"), 0.5
+            arcade.sound.Sound("./Assets/SFX/bang-sfx/cannon_02.wav"), 0.3
         )
         player.is_shooting = False
         player.is_cannon_shooting = False
