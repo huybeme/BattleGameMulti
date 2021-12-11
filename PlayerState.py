@@ -38,11 +38,17 @@ class PlayerMovement:
         arcade.key.F: False
     }
 
+@dataclass_json
+@dataclass
+class ItemState:
+    x_loc: int
+    y_loc: int
+    rand_power_up: int
+    present: bool
+    item_delay: datetime.datetime
 
 @dataclass_json
 @dataclass
 class GameState:
     player_states: Dict[str, PlayerState]
-    # barrel_state: Dict[str, BarrelState]
-    # need a game state to keep track of gameover and/or round so proper resets happen
-    # in the game on the client side
+    item: ItemState

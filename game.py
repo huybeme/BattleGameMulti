@@ -243,6 +243,7 @@ class EnemySprite(arcade.Sprite):
 
         self.counter = 0
 
+
 class MoveableSprite(arcade.Sprite):
     def __init__(self, image: str, scale: float, center_x: int, center_y: int):
         super().__init__(image)
@@ -656,7 +657,6 @@ class TiledWindow(arcade.Window):
         self.p2_power_up_timer = 0
 
 
-
     # Initially sets up or restarts the game
     def setup(self):
         # Main Scene call
@@ -668,11 +668,6 @@ class TiledWindow(arcade.Window):
         # Computer enemy setup
         # self.enemy_list = arcade.SpriteList()
         # self.enemy_bullet_list = arcade.SpriteList()
-
-        # --- PHYSICS ----------------------------------------------------------------------------//
-        self.physics_engine_wall = arcade.PhysicsEngineSimple(
-            self.player_1, self.wall_list
-        )
 
     def game_reset(self):
 

@@ -851,7 +851,7 @@ class TiledWindow(arcade.Window):
             self.wait_between_powerups -= delta_time
             if self.wait_between_powerups <= 0:
                 self.wait_between_powerups = 12
-                self.random_power_up()
+                # self.random_power_up()
                 arcade.sound.play_sound(arcade.Sound("./Assets/SFX/Bottle_Up.wav"), 4)
 
         if self.p1_invincibility_bool:
@@ -1359,21 +1359,17 @@ class TiledWindow(arcade.Window):
         if (key in self.actions.keys):
             self.actions.keys[key] = False
 
-    def random_power_up(self):
-        random_x = randint(16, SCREEN_WIDTH - 16)
-        random_y = randint(16, SCREEN_HEIGHT - 16)
-        rand_power_up = randint(0, 2)
-
+    def random_power_up(self, x, y, power):
         power_up = arcade.Sprite("./Assets/World/Items/Item_1/SPR_Special_Item_0.png")
-        power_up.center_x = random_x
-        power_up.center_y = random_y
+        power_up.center_x = x
+        power_up.center_y = y
         power_up.scale = 2
 
-        if rand_power_up == 0:
+        if power == 0:
             power_up.color = arcade.color.BEAU_BLUE
-        elif rand_power_up == 1:
+        elif power == 1:
             power_up.color = arcade.color.ELECTRIC_GREEN
-        elif rand_power_up == 2:
+        elif power == 2:
             power_up.color = arcade.color.CANDY_APPLE_RED
 
         self.power_up_list.append(power_up)
@@ -1385,10 +1381,41 @@ class TiledWindow(arcade.Window):
             )
             wall_collision = arcade.check_for_collision_with_list(item, self.wall_list)
 
-            # Recursive call to keep trying to spawn item only in navigatable water tiles
+            # Recursive call to keep trying to spawn item only in navigable water tiles
             if not water_collision or wall_collision:
                 item.remove_from_sprite_lists()
-                self.random_power_up()
+                self.random_power_up(x, y, power)
+
+    # def random_power_up(self):
+    #     random_x = randint(16, SCREEN_WIDTH - 16)
+    #     random_y = randint(16, SCREEN_HEIGHT - 16)
+    #     rand_power_up = randint(0, 2)
+    #
+    #     power_up = arcade.Sprite("./Assets/World/Items/Item_1/SPR_Special_Item_0.png")
+    #     power_up.center_x = random_x
+    #     power_up.center_y = random_y
+    #     power_up.scale = 2
+    #
+    #     if rand_power_up == 0:
+    #         power_up.color = arcade.color.BEAU_BLUE
+    #     elif rand_power_up == 1:
+    #         power_up.color = arcade.color.ELECTRIC_GREEN
+    #     elif rand_power_up == 2:
+    #         power_up.color = arcade.color.CANDY_APPLE_RED
+    #
+    #     self.power_up_list.append(power_up)
+    #
+    #     # Making sure item does not spawn on top of specific entities
+    #     for item in self.power_up_list:
+    #         water_collision = arcade.check_for_collision_with_list(
+    #             item, self.water_tile_list
+    #         )
+    #         wall_collision = arcade.check_for_collision_with_list(item, self.wall_list)
+    #
+    #         # Recursive call to keep trying to spawn item only in navigable water tiles
+    #         if not water_collision or wall_collision:
+    #             item.remove_from_sprite_lists()
+    #             self.random_power_up()
 
     def spawn_whirlpool(self, pre_whirlpool):
         self.whirlpool_sprite = arcade.AnimatedTimeBasedSprite(
@@ -1499,12 +1526,13 @@ async def communication_with_server(client: TiledWindow, event_loop):  # client 
     if player_dict[client.ip_addr].id == 1:
         player = client.player_1
         player2 = client.player_2
-        player2_ip_addr = ip_addresses[1]
+        # player2_ip_addr = ip_addresses[1]
     else:
         player = client.player_2
         player2 = client.player_1
         player2_ip_addr = ip_addresses[0]
 
+    player = client.player_2
 
     while True:
         keystate = json.dumps(client.actions.keys)
@@ -1523,14 +1551,21 @@ async def communication_with_server(client: TiledWindow, event_loop):  # client 
         player.is_shooting = player1_info.shooting
         player.is_cannon_shooting = player1_info.weapon_shooting
 
-        player2_info: PlayerState.PlayerState = player_dict[player2_ip_addr]
-        player2.center_x = player2_info.x_loc
-        player2.center_y = player2_info.y_loc
-        player2.weapon.angle = player2_info.weapon_angle
-        player2.face_angle = player2_info.face_angle
-        player2.is_shooting = player2_info.shooting
-        player2.is_cannon_shooting = player2_info.weapon_shooting
+        # player2_info: PlayerState.PlayerState = player_dict[player2_ip_addr]
+        # player2.center_x = player2_info.x_loc
+        # player2.center_y = player2_info.y_loc
+        # player2.weapon.angle = player2_info.weapon_angle
+        # player2.face_angle = player2_info.face_angle
+        # player2.is_shooting = player2_info.shooting
+        # player2.is_cannon_shooting = player2_info.weapon_shooting
 
+        # item_info: PlayerState.ItemState = decoded_data.item
+        # if not item_info.present and len(client.power_up_list) < 1:
+        #     client.random_power_up(item_info.x_loc, item_info.y_loc, item_info.rand_power_up)
+        #     client.power_up_list[0].center_x = item_info.x_loc
+        #     client.power_up_list[0].center_y = item_info.y_loc
+        #     item_info.item_delay = datetime.datetime.now()
+        #     item_info.present = True
 
 
 def main():
