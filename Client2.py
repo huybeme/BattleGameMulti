@@ -283,6 +283,7 @@ class TiledWindow(arcade.Window):
         self.server_address = server_addr
         self.server_port = server_port
         self.actions = PlayerState.PlayerMovement()
+        self.player_actions = PlayerState.PlayerState()
         self.from_server = ""
 
         self.round = 1
@@ -666,6 +667,7 @@ class TiledWindow(arcade.Window):
             self.player_2.num_bullets = 3
             self.clear_flag = True
             self.level_reset = True
+
 
         self.round += 1
         arcade.sound.play_sound(arcade.Sound("./Assets/SFX/Lip_Pop.wav"), 8)
@@ -1485,7 +1487,9 @@ async def communication_with_server(client: TiledWindow, event_loop):  # client 
 
     # send stuff to server to get player id for player determination
     keystate = json.dumps(client.actions.keys)
+    level_state = json.dumps(client.player_actions.level_reset)
     UDPClientSocket.sendto(str.encode(keystate), (client.server_address, int(client.server_port)))
+    UDPClientSocket.sendto(str.encode(level_state), (client.server_address, int(client.server_port)))
     data_packet = UDPClientSocket.recvfrom(1024)
     data = data_packet[0]
     decoded_data: PlayerState.GameState = PlayerState.GameState.from_json(data)
@@ -1521,13 +1525,15 @@ async def communication_with_server(client: TiledWindow, event_loop):  # client 
 
         player1_info: PlayerState.PlayerState = player_dict[client.ip_addr]  # get info of your ip
 
-        if not player.level_reset:
-            player.center_x = player1_info.x_loc
-            player.center_y = player1_info.y_loc
-        else:
+
+        if  player1_info.level_reset:
+            print(player.level_reset)
             player.center_x = 80
             player.center_y = 80
             player.level_reset = False
+        else:
+            player.center_x = player1_info.x_loc
+            player.center_y = player1_info.y_loc
 
         player.weapon.angle = player1_info.weapon_angle
         player.face_angle = player1_info.face_angle

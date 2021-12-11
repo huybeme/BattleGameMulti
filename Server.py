@@ -84,6 +84,18 @@ def process_player_movement(player_move: PlayerState.PlayerMovement, client_addr
         player_info.bullet_delay = now
 
 
+def process_player_state(player_state: PlayerState.PlayerState, client_address: str,
+                            gamestate: PlayerState.GameState):
+    player_info = gamestate.player_states[client_address[0]]
+    now = datetime.datetime.now()
+    if player_info.last_update + datetime.timedelta(milliseconds=20) > now:
+        return
+    player_info.last_update = now
+
+    player_info.level_reset = True
+
+
+
 def main():
     server_address = find_ip_address()
     print(f"Server address is {server_address} on port {SERVER_PORT}")
@@ -105,7 +117,9 @@ def main():
             if len(all_players) < 1:
                 print(f"player 1: {client_address[0]} added")
                 player1: PlayerState.PlayerState = PlayerState.PlayerState(
-                    id=1, x_loc=80, y_loc=80, face_angle=90, weapon_angle=0, shooting=False, weapon_shooting=False,
+                    id=1, x_loc=80, y_loc=80,
+                    face_angle=90, weapon_angle=0, shooting=False, weapon_shooting=False,
+                    level_reset = False,
                     last_update=datetime.datetime.now(),
                     bullet_delay=datetime.datetime.now()
                 )
@@ -114,8 +128,10 @@ def main():
             elif len(all_players) == 1:
                 print(f"player 2: {client_address[0]} added")
                 player2: PlayerState.PlayerState = PlayerState.PlayerState(
-                    id=2, x_loc=Client2.SCREEN_WIDTH - 64, y_loc=Client2.SCREEN_HEIGHT - 64, face_angle=270,
-                    weapon_angle=0, shooting=False, weapon_shooting=False, last_update=datetime.datetime.now(),
+                    id=2, x_loc=Client2.SCREEN_WIDTH - 64, y_loc=Client2.SCREEN_HEIGHT - 64,
+                    face_angle=270, weapon_angle=0, shooting=False, weapon_shooting=False,
+                    level_reset = False,
+                    last_update=datetime.datetime.now(),
                     bullet_delay=datetime.datetime.now()
                 )
                 all_players[client_address[0]] = player2
@@ -138,7 +154,9 @@ def main():
         message = data_packet[0]  # data stored here within tuple
         client_address = data_packet[1]  # client IP addr is stored here, nothing beyond [1]
 
+
         json_data = json.loads(message)
+        print(json_data)
         player_move: PlayerState.PlayerMovement = PlayerState.PlayerMovement()
         player_move.keys = json_data
         process_player_movement(player_move, client_address, gameState)

@@ -15,6 +15,7 @@ class PlayerState:
     weapon_angle: float
     shooting: bool
     weapon_shooting: bool
+    level_reset: bool
     last_update: datetime.datetime
     bullet_delay: datetime.datetime
 
