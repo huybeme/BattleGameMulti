@@ -8,8 +8,6 @@ import random
 from typing import Dict
 
 SERVER_PORT = 25001
-<<<<<<< Updated upstream
-=======
 all_players: Dict[str, PlayerState.PlayerState] = {}
 
 SPRITE_IMAGE_SIZE = 32
@@ -26,7 +24,6 @@ SCREEN_GRID_HEIGHT = 25
 SCREEN_WIDTH = SCREEN_GRID_WIDTH * SPRITE_IMAGE_SIZE
 SCREEN_HEIGHT = SCREEN_GRID_HEIGHT * SPRITE_IMAGE_SIZE
 
->>>>>>> Stashed changes
 
 def find_ip_address():
     server_address = ""
@@ -40,8 +37,6 @@ def find_ip_address():
         connection.close()
     return server_address
 
-<<<<<<< Updated upstream
-=======
 
 def process_player_movement(player_move: PlayerState.PlayerMovement, client_address: str,
                             gamestate: PlayerState.GameState):
@@ -128,7 +123,6 @@ def initialize_map():
     # print(walls)
 
 
->>>>>>> Stashed changes
 def main():
     server_address = find_ip_address()
     print(f"Server address is {server_address} on port {SERVER_PORT}")
@@ -138,14 +132,14 @@ def main():
     UDPServerSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
     UDPServerSocket.bind((server_address, SERVER_PORT))
 
-<<<<<<< Updated upstream
+
     while(True):
         data_packet = UDPServerSocket.recvfrom(1024)    # sets the packet size
         message = data_packet[0]            # data stored here within tuple
         client_address = data_packet[1]     # client IP addr is stored here, nothing beyond [1]
         print(f"from: {client_address}")
         print(f"\tmessage: {message}")
-=======
+
     addresses = []
 
     # sort who is who for players
@@ -192,7 +186,7 @@ def main():
         data_packet = UDPServerSocket.recvfrom(1024)  # sets the packet size, next lines won't run until this receives
         message = data_packet[0]  # data stored here within tuple
         client_address = data_packet[1]  # client IP addr is stored here, nothing beyond [1]
->>>>>>> Stashed changes
+
 
         # do something here if first time seeing player
 

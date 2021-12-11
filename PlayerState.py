@@ -1,5 +1,3 @@
-<<<<<<< Updated upstream
-=======
 import datetime
 import arcade
 from typing import Dict
@@ -50,4 +48,3 @@ class GameState:
     # barrel_state: Dict[str, BarrelState]
     # need a game state to keep track of gameover and/or round so proper resets happen
     # in the game on the client side
->>>>>>> Stashed changes
