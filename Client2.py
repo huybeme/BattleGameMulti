@@ -98,6 +98,7 @@ class Player(arcade.Sprite):
         self.num_bullets = 3
         self.player_id = id
         self.lives = lives
+        self.level_reset = False
         self.is_shooting = False
         self.is_cannon_shooting = False
         self.face_angle = face  # since we start off facing up
@@ -664,6 +665,7 @@ class TiledWindow(arcade.Window):
             self.player_1.num_bullets = 3
             self.player_2.num_bullets = 3
             self.clear_flag = True
+            self.level_reset = True
 
         self.round += 1
         arcade.sound.play_sound(arcade.Sound("./Assets/SFX/Lip_Pop.wav"), 8)
@@ -835,6 +837,7 @@ class TiledWindow(arcade.Window):
             if self.reset_timer <= 0:
                 self.p1_total_movement_speed = PLAYER_MOV_SPEED
                 self.p2_total_movement_speed = PLAYER_MOV_SPEED
+                self.level_reset = False
                 self.is_resetting = False
 
         if self.p1_power_up_timer > 0:
@@ -1515,9 +1518,17 @@ async def communication_with_server(client: TiledWindow, event_loop):  # client 
 
         player_dict = decoded_data.player_states    # will contain all_players
 
+
         player1_info: PlayerState.PlayerState = player_dict[client.ip_addr]  # get info of your ip
-        player.center_x = player1_info.x_loc
-        player.center_y = player1_info.y_loc
+
+        if not player.level_reset:
+            player.center_x = player1_info.x_loc
+            player.center_y = player1_info.y_loc
+        else:
+            player.center_x = 80
+            player.center_y = 80
+            player.level_reset = False
+
         player.weapon.angle = player1_info.weapon_angle
         player.face_angle = player1_info.face_angle
         player.is_shooting = player1_info.shooting
@@ -1535,7 +1546,7 @@ async def communication_with_server(client: TiledWindow, event_loop):  # client 
 
 def main():
 
-    SERVER_ADDR = "10.0.0.241"
+    SERVER_ADDR = "192.168.0.82"
     SERVER_PORT = "25001"
 
     CLIENT_ADDR = find_ip_address()
