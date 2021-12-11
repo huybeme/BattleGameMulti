@@ -35,7 +35,7 @@ class PlayerMovement:
         arcade.key.D: False,
         arcade.key.E: False,
         arcade.key.SPACE: False,
-        arcade.key.RCTRL: False
+        arcade.key.F: False
     }
 
 
