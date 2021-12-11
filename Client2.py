@@ -283,11 +283,11 @@ class TiledWindow(arcade.Window):
         self.server_address = server_addr
         self.server_port = server_port
         self.actions = PlayerState.PlayerMovement()
-        self.player_actions = PlayerState.PlayerState(
-            id=1, x_loc=0, y_loc=0, face_angle=0,weapon_angle=0,
-            shooting=False, weapon_shooting=False,
-            level_reset=False, last_update=datetime.datetime.now(),
-            bullet_delay=datetime.datetime.now())
+        #self.player_actions = PlayerState.PlayerState(
+           # id=0, x_loc=0, y_loc=0, face_angle=0,weapon_angle=0,
+            #shooting=False, weapon_shooting=False,
+            #level_reset=False, last_update=datetime.datetime.now(),
+            #bullet_delay=datetime.datetime.now())
         self.from_server = ""
 
         self.round = 1
@@ -1519,7 +1519,9 @@ async def communication_with_server(client: TiledWindow, event_loop):  # client 
 
     while True:
         keystate = json.dumps(client.actions.keys)
+        level_state = json.dumps(client.player_actions.level_reset)
         UDPClientSocket.sendto(str.encode(keystate), (client.server_address, int(client.server_port)))
+        UDPClientSocket.sendto(str.encode(level_state), (client.server_address, int(client.server_port)))
         data_packet = UDPClientSocket.recvfrom(1024)
         data = data_packet[0]   # get the encoded string
         decoded_data: PlayerState.GameState = PlayerState.GameState.from_json(data)
