@@ -72,13 +72,16 @@ def process_player_movement(player_move: PlayerState.PlayerMovement, client_addr
         delta_weapon = 3
     player_info.weapon_angle += delta_weapon
 
-    player_info.weapon_shooting = False
-    player_info.shooting = False
+    if player_info.bullet_delay < now + datetime.timedelta(seconds=2):
+        player_info.weapon_shooting = False
+        player_info.shooting = False
     if player_move.keys[str(arcade.key.SPACE)]:
         player_info.shooting = True
         player_info.weapon_shooting = True
+        player_info.bullet_delay = now
     if player_move.keys[str(arcade.key.RCTRL)]:
         player_info.shooting = True
+        player_info.bullet_delay = now
 
 
 def main():
