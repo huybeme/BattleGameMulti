@@ -1514,7 +1514,7 @@ async def communication_with_server(client: TiledWindow, event_loop):  # client 
         data = data_packet[0]   # get the encoded string
         gamestate_data: PlayerState.GameState = PlayerState.GameState.from_json(data)
 
-        player_dict = decoded_data.player_states    # will contain all_players
+        player_dict = gamestate_data.player_states    # will contain all_players
 
         player1_info: PlayerState.PlayerState = player_dict[client.ip_addr]  # get info of your ip
         player.center_x = player1_info.x_loc
@@ -1524,9 +1524,9 @@ async def communication_with_server(client: TiledWindow, event_loop):  # client 
         player.is_shooting = player1_info.shooting
         player.is_cannon_shooting = player1_info.weapon_shooting
 
-        if player.lives == 0 or client.player_2.lives == 0:
-            gamestate_data.level_switch = True
-            gamestate_data.level_num += 1
+        # if player.lives == 0 or client.player_2.lives == 0:
+        #     gamestate_data.level_switch = True
+        #     gamestate_data.level_num += 1
 
         # player2_info: PlayerState.PlayerState = player_dict[player2_ip_addr]
         # player2.center_x = player2_info.x_loc

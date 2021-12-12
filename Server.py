@@ -30,7 +30,8 @@ layer_options = {
     "Solids": {"use_spatial_hash": True},
     "Upper_Decorative": {"use_spatial_hash": True},
 }
-game_map = arcade.load_tilemap("Assets/Battle_Ships_Map_1.json", layer_options=layer_options,
+map_string = "Assets/Battle_Ships_Map_1.json"
+game_map = arcade.load_tilemap(map_string, layer_options=layer_options,
                                scaling=game.SPRITE_SCALING_TILES)
 wall_list = game_map.sprite_lists["Solids"]
 map_scene = arcade.Scene.from_tilemap(game_map)
@@ -148,6 +149,8 @@ def check_for_collision(gamestate: PlayerState.GameState, client_address: str):
             player_info.x_loc -= cf
         player.set_position(player_info.x_loc, player_info.y_loc)
 
+    # if gamestate.level_switch:
+    #     pass
 
 
 def main():
