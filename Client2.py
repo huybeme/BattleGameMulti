@@ -47,6 +47,9 @@ LAYER_SHOTS = "Shots"
 LAYER_MOVEABLES = "Moveables"
 LAYER_ITEMS = "Items"
 
+player1_lives = 5
+player2_lives = 5
+
 
 class WeaponSprite(arcade.Sprite):
     def __init__(self, img_path: str, scale: float):
@@ -656,6 +659,11 @@ class TiledWindow(arcade.Window):
         self.physics_engine_wall = arcade.PhysicsEngineSimple(
             self.player_1, self.wall_list
         )
+
+    # def track_player_info():
+        # track_player_info.p1_lives = player_1.lives
+        # track_player_info.p2_lives = player_2.lives
+
 
     def game_reset(self):
 
@@ -1524,6 +1532,8 @@ async def communication_with_server(client: TiledWindow, event_loop):  # client 
         player_dict = gamestate_data.player_states    # will contain all_players
         game_info: PlayerState.GameInformation = gamestate_data.game_state
 
+
+
         # update client player information based on playerstate data
         player1_info: PlayerState.PlayerState = player_dict[client.ip_addr]  # get info of your ip
         player.center_x = player1_info.x_loc
@@ -1545,8 +1555,14 @@ async def communication_with_server(client: TiledWindow, event_loop):  # client 
         game_info.player2_lives = player2.lives
         game_info.player2_score = player2.score
 
+        print("P1 Lives: ", game_info.player1_lives)
+        # print("P2 Lives: ", client.player_2.lives)
+
         # update and send server game information
         if client.next_level:
+            game_info.player1_lives -= 1
+            print("P1 Lives: ", game_info.player1_lives)
+            # print("P2 Lives: ", client.player_2.lives)
             game_info.level_switch = True
             game_info.level_num += 1
             print("someone died")
@@ -1559,6 +1575,13 @@ async def communication_with_server(client: TiledWindow, event_loop):  # client 
         game_info_list = [game_info.level_switch, game_info.level_num, game_info.player1_lives, game_info.player1_score,
                           game_info.player_died]
         game_info_data = json.dumps(game_info_list)
+
+        #game_info_list2 = [game_info.level_switch, game_info.level_num, game_info.player2_lives, game_info.player2_score,
+                         # game_info.player_died]
+        #game_info_data2 = json.dumps(game_info_list2)
+        #print(game_info_data2)
+
+        print(game_info_data)
         UDPClientSocket.sendto(str.encode(game_info_data), (client.server_address, int(client.server_port)))
 
 
@@ -1566,7 +1589,7 @@ async def communication_with_server(client: TiledWindow, event_loop):  # client 
 
 def main():
 
-    SERVER_ADDR = "10.0.0.241"
+    SERVER_ADDR = "192.168.0.82"
     SERVER_PORT = "25001"
 
     CLIENT_ADDR = find_ip_address()
