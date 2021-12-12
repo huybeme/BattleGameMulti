@@ -236,7 +236,6 @@ class Player(arcade.Sprite):
         elif self.face_angle == 0:  # right
             self.animation(self.sheet_0, update_per_frame)
 
-
     def animation(self, sheet, update):
         self.current_texture += 1
         if self.current_texture > 7 * update:
@@ -371,6 +370,7 @@ class TiledWindow(arcade.Window):
         self.post_whirlpool_list = arcade.SpriteList()
         self.post_whirlpool_sprite = None
 
+        # --- BARREL-----------------------------------------------------------------------------//
         # MAP 1
         self.barrel_1 = arcade.AnimatedTimeBasedSprite(
             "./Assets/World/Objects/Barrel/SPR_Barrel_0.png",
@@ -461,7 +461,6 @@ class TiledWindow(arcade.Window):
             center_y=120,
         )
 
-        # --- BARREL-----------------------------------------------------------------------------//
         barrel_sprite_path = "./Assets/World/Objects/Barrel/Barrel_Sprite_Sheet.png"
         barrel_frames: List[arcade.AnimationKeyframe] = []
 
@@ -637,8 +636,6 @@ class TiledWindow(arcade.Window):
         self.wait_between_powerups = 12
         self.p1_power_up_timer = 0
         self.p2_power_up_timer = 0
-
-
 
     # Initially sets up or restarts the game
     def setup(self):
@@ -1091,7 +1088,7 @@ class TiledWindow(arcade.Window):
         if player_2_collision:
             self.p2_total_movement_speed = 0.4
 
-         # SPECIAL POWER_UPS -----------------------------------------------------------------\\
+        # SPECIAL POWER_UPS -----------------------------------------------------------------\\
         for power_up in self.power_up_list:
 
             # Manual Animation
@@ -1314,7 +1311,6 @@ class TiledWindow(arcade.Window):
                 40,
             )
 
-
     def player_shooting(self, player):
         bullet = BulletSprite(
             "./Assets/Player/spike_ball/spike_ball.png", 5, 0.15, game_window=self
@@ -1471,6 +1467,7 @@ class TiledWindow(arcade.Window):
         self.post_whirlpool_list.append(self.post_whirlpool_sprite)
         whirlpool.remove_from_sprite_lists()
 
+
 def get_ip_addresses(data):
     ip_addresses = []
     count = 1
@@ -1485,6 +1482,7 @@ def get_ip_addresses(data):
         count += 1
     return ip_addresses
 
+
 def find_ip_address():
     server_address = ""
     connection = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -1496,6 +1494,7 @@ def find_ip_address():
     finally:
         connection.close()
     return server_address
+
 
 def setup_client_connection(client: TiledWindow):
     client_event_loop = asyncio.new_event_loop()
@@ -1538,10 +1537,10 @@ async def communication_with_server(client: TiledWindow, event_loop):  # client 
         keystate = json.dumps(client.actions.keys)
         UDPClientSocket.sendto(str.encode(keystate), (client.server_address, int(client.server_port)))
         data_packet = UDPClientSocket.recvfrom(1024)
-        data = data_packet[0]   # get the encoded string
+        data = data_packet[0]  # get the encoded string
         decoded_data: PlayerState.GameState = PlayerState.GameState.from_json(data)
 
-        player_dict = decoded_data.player_states    # will contain all_players
+        player_dict = decoded_data.player_states  # will contain all_players
 
         player1_info: PlayerState.PlayerState = player_dict[client.ip_addr]  # get info of your ip
         player.center_x = player1_info.x_loc
@@ -1568,8 +1567,8 @@ async def communication_with_server(client: TiledWindow, event_loop):  # client 
         #     item_info.present = True
 
 
-def main():
 
+def main():
     SERVER_ADDR = "10.0.0.241"
     SERVER_PORT = "25001"
 

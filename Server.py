@@ -1,5 +1,8 @@
+import asyncio
 import socket
 import json
+import threading
+
 import PlayerState
 from typing import Dict
 import datetime
@@ -20,24 +23,16 @@ class Player(arcade.Sprite):
         super().__init__()
         self.center_x = xloc
         self.center_y = yloc
+        player_block = arcade.make_soft_square_texture(64, [0, 0, 0])
+        self.texture = player_block
 
 
 class GameWindow(arcade.Window):
     def __init__(self, player1: Player):
         super().__init__(game.SCREEN_WIDTH, game.SCREEN_HEIGHT, title="server window")
-        self.wall_list = None
-        self.map_scene = None
 
-        self.player_list = arcade.SpriteList()
-        self.player1 = player1
-        self.player1_physics = None
-        self.player_list.append(self.player1)
         # self.player2 = player2
 
-
-
-
-    def setup(self):
         layer_options = {
             "Water": {"use_spatial_hash": True},
             "Beach": {"use_spatial_hash": True},
@@ -55,9 +50,12 @@ class GameWindow(arcade.Window):
         self.wall_list = tile_map1.sprite_lists["Solids"]
         self.map_scene = arcade.Scene.from_tilemap(tile_map1)
 
+        self.player1 = player1
+
         self.player1_physics = arcade.PhysicsEngineSimple(self.player1, self.wall_list)
-        self.player1.texture = arcade.load_texture("./Assets/Player/ship_sheet.png")
-        self.player1.update()
+
+        self.player_list = arcade.SpriteList()
+        self.player_list.append(self.player1)
 
     def on_update(self, delta_time: float):
         self.player1_physics.update()
@@ -68,6 +66,12 @@ class GameWindow(arcade.Window):
         self.map_scene.draw()
         self.player_list.draw()
 
+
+    def on_key_press(self, symbol: int, modifiers: int):
+        pass
+
+    def on_key_release(self, key, modifiers):
+        pass
 
 def find_ip_address():
     server_address = ""
@@ -94,35 +98,47 @@ def process_player_movement(player_move: PlayerState.PlayerMovement, client_addr
     delta_y = 0
 
     if player_move.keys[str(arcade.key.UP)] and player_move.keys[str(arcade.key.RIGHT)]:
-        delta_y = speed
-        delta_x = speed
+        # delta_y = speed
+        # delta_x = speed
+        player_info.y_loc += speed
+        player_info.x_loc += speed
         player_info.face_angle = 45
     elif player_move.keys[str(arcade.key.UP)] and player_move.keys[str(arcade.key.LEFT)]:
-        delta_y = speed
-        delta_x = -speed
+        # delta_y = speed
+        # delta_x = -speed
+        player_info.y_loc += speed
+        player_info.x_loc -= speed
         player_info.face_angle = 135
     elif player_move.keys[str(arcade.key.DOWN)] and player_move.keys[str(arcade.key.LEFT)]:
-        delta_y = -speed
-        delta_x = -speed
+        # delta_y = -speed
+        # delta_x = -speed
+        player_info.y_loc -= speed
+        player_info.x_loc -= speed
         player_info.face_angle = 225
     elif player_move.keys[str(arcade.key.DOWN)] and player_move.keys[str(arcade.key.RIGHT)]:
-        delta_y = -speed
-        delta_x = speed
+        # delta_y = -speed
+        # delta_x = speed
+        player_info.y_loc -= speed
+        player_info.x_loc += speed
         player_info.face_angle = 315
     elif player_move.keys[str(arcade.key.UP)]:
-        delta_y = speed
+        # delta_y = speed
+        player_info.y_loc += speed
         player_info.face_angle = 90
     elif player_move.keys[str(arcade.key.DOWN)]:
-        delta_y = -speed
+        # delta_y = -speed
+        player_info.y_loc -= speed
         player_info.face_angle = 270
     elif player_move.keys[str(arcade.key.LEFT)]:
-        delta_x = -speed
+        # delta_x = -speed
+        player_info.x_loc -= speed
         player_info.face_angle = 180
     elif player_move.keys[str(arcade.key.RIGHT)]:
-        delta_x = speed
+        # delta_x = speed
+        player_info.x_loc += speed
         player_info.face_angle = 0
-    player_info.x_loc += delta_x
-    player_info.y_loc += delta_y
+    # player_info.x_loc += delta_x
+    # player_info.y_loc += delta_y
 
     delta_weapon = 0
     if player_move.keys[str(arcade.key.S)] or player_move.keys[str(arcade.key.A)]:
@@ -153,7 +169,6 @@ def check_if_at_item(player: PlayerState.PlayerMovement, item: PlayerState.ItemS
 
 
 def check_for_map_collision(player, tile):
-
     wall_list = tile.sprite_lists["Solids"]
     player_physics = arcade.PhysicsEngineSimple(player, wall_list)
     dimension = 100
@@ -172,6 +187,34 @@ def check_for_map_collision(player, tile):
 
     player.set_hit_box(points=hit_box_points)
     player_physics.update()
+
+
+def setup_server_connection(server: GameWindow, gamestate, server_address, UDPServerSocket):
+    server_event_loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(server_event_loop)
+    server_event_loop.create_task(communication_with_client(server, server_event_loop, gamestate, server_address, UDPServerSocket))
+    server_event_loop.run_forever()
+
+
+async def communication_with_client(server: GameWindow, event_loop, gamestate, server_address, UDPServerSocket):
+
+    while (True):
+        data_packet = UDPServerSocket.recvfrom(1024)  # sets the packet size, next lines won't run until this receives
+        message = data_packet[0]  # data stored here within tuple
+        client_address = data_packet[1]  # client IP addr is stored here, nothing beyond [1]
+
+        json_data = json.loads(message)
+
+        player_move: PlayerState.PlayerMovement = PlayerState.PlayerMovement()
+        player_move.keys = json_data
+        process_player_movement(player_move, client_address, gamestate)
+        response = gamestate.to_json()
+        UDPServerSocket.sendto(str.encode(response), client_address)
+
+        player1_info: PlayerState.PlayerState = gamestate.player_states[client_address[0]]
+        server.player1.center_x = player1_info.x_loc
+        server.player1.center_y = player1_info.y_loc
+        server.player1_physics.update()
 
 
 def main():
@@ -221,11 +264,9 @@ def main():
         response = gameState.to_json()
         UDPServerSocket.sendto(str.encode(response), client_address)
     print("all players connected")
+
     player_info = gameState.player_states[addresses[0][0]]
     player = Player(player_info.y_loc, player_info.y_loc)
-
-    # window = GameWindow(player)
-    # window.setup()
 
     # send list of IP addresses to client
     message = json.dumps(addresses)
@@ -233,22 +274,12 @@ def main():
     # UDPServerSocket.sendto(str.encode(message), addresses[1])
     print("addresses sent")
 
+    window = GameWindow(player)
 
-    while (True):
-        data_packet = UDPServerSocket.recvfrom(1024)  # sets the packet size, next lines won't run until this receives
-        message = data_packet[0]  # data stored here within tuple
-        client_address = data_packet[1]  # client IP addr is stored here, nothing beyond [1]
-
-        json_data = json.loads(message)
-
-        player_move: PlayerState.PlayerMovement = PlayerState.PlayerMovement()
-        player_move.keys = json_data
-        process_player_movement(player_move, client_address, gameState)
-        response = gameState.to_json()
-        UDPServerSocket.sendto(str.encode(response), client_address)
-
-
-
+    server_thread = threading.Thread(target=setup_server_connection, args=(window, gameState, server_address, UDPServerSocket),
+                                     daemon=True)
+    server_thread.start()
+    arcade.run()
 
 
 if __name__ == '__main__':
