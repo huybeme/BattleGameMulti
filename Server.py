@@ -35,7 +35,8 @@ game_map = arcade.load_tilemap(map_string, layer_options=layer_options,
                                scaling=game.SPRITE_SCALING_TILES)
 wall_list = game_map.sprite_lists["Solids"]
 map_scene = arcade.Scene.from_tilemap(game_map)
-player = Player(0, 0)
+player1 = Player(0, 0)
+player2 = Player(0, 0)
 
 
 def find_ip_address():
@@ -62,43 +63,43 @@ def process_player_movement(player_move: PlayerState.PlayerMovement, client_addr
     delta_y = 0
 
     if player_move.keys[str(arcade.key.UP)] and player_move.keys[str(arcade.key.RIGHT)]:
-        player.center_y += 3
-        player.center_x += 3
+        player1.center_y += 3
+        player1.center_x += 3
         delta_y = 3
         delta_x = 3
         player_info.face_angle = 45
     elif player_move.keys[str(arcade.key.UP)] and player_move.keys[str(arcade.key.LEFT)]:
-        player.center_y += 3
-        player.center_x -= 3
+        player1.center_y += 3
+        player1.center_x -= 3
         delta_y = 3
         delta_x = -3
         player_info.face_angle = 135
     elif player_move.keys[str(arcade.key.DOWN)] and player_move.keys[str(arcade.key.LEFT)]:
-        player.center_y -= 3
-        player.center_x -= 3
+        player1.center_y -= 3
+        player1.center_x -= 3
         delta_y = -3
         delta_x = -3
         player_info.face_angle = 225
     elif player_move.keys[str(arcade.key.DOWN)] and player_move.keys[str(arcade.key.RIGHT)]:
-        player.center_y -= 3
-        player.center_x += 3
+        player1.center_y -= 3
+        player1.center_x += 3
         delta_y = -3
         delta_x = 3
         player_info.face_angle = 315
     elif player_move.keys[str(arcade.key.UP)]:
         delta_y = 3
-        player.center_y += 3
+        player1.center_y += 3
         player_info.face_angle = 90
     elif player_move.keys[str(arcade.key.DOWN)]:
         delta_y = -3
-        player.center_y -= 3
+        player1.center_y -= 3
         player_info.face_angle = 270
     elif player_move.keys[str(arcade.key.LEFT)]:
-        player.center_x -= 3
+        player1.center_x -= 3
         delta_x = -3
         player_info.face_angle = 180
     elif player_move.keys[str(arcade.key.RIGHT)]:
-        player.center_x += 3
+        player1.center_x += 3
         delta_x = 3
         player_info.face_angle = 0
     player_info.x_loc += delta_x
@@ -126,7 +127,7 @@ def process_player_movement(player_move: PlayerState.PlayerMovement, client_addr
 def check_for_collision(gamestate: PlayerState.GameState, client_address: str):
     cf = 3
     player_info = gamestate.player_states[client_address[0]]
-    if player.collides_with_list(wall_list):
+    if player1.collides_with_list(wall_list):
         if player_info.face_angle == 135:
             player_info.x_loc += cf
             player_info.y_loc -= cf
@@ -147,7 +148,7 @@ def check_for_collision(gamestate: PlayerState.GameState, client_address: str):
             player_info.y_loc += cf
         elif player_info.face_angle == 0:
             player_info.x_loc -= cf
-        player.set_position(player_info.x_loc, player_info.y_loc)
+        player1.set_position(player_info.x_loc, player_info.y_loc)
 
 
 def main():
@@ -170,21 +171,22 @@ def main():
         if not client_address[0] in all_players and len(all_players) < 2:
             if len(all_players) < 1:
                 print(f"player 1: {client_address[0]} added")
-                player1: PlayerState.PlayerState = PlayerState.PlayerState(
+                player1_state: PlayerState.PlayerState = PlayerState.PlayerState(
                     id=1, x_loc=80, y_loc=80, face_angle=90, weapon_angle=0, shooting=False, weapon_shooting=False,
                     last_update=datetime.datetime.now(), bullet_delay=datetime.datetime.now()
                 )
-                player.set_position(player1.x_loc, player1.y_loc)
-                all_players[client_address[0]] = player1
+                player1.set_position(player1_state.x_loc, player1_state.y_loc)
+                all_players[client_address[0]] = player1_state
                 addresses.append(client_address)
             elif len(all_players) == 1:
                 print(f"player 2: {client_address[0]} added")
-                player2: PlayerState.PlayerState = PlayerState.PlayerState(
+                player2_state: PlayerState.PlayerState = PlayerState.PlayerState(
                     id=2, x_loc=Client2.SCREEN_WIDTH - 64, y_loc=Client2.SCREEN_HEIGHT - 64, face_angle=270,
                     weapon_angle=0, shooting=False, weapon_shooting=False, last_update=datetime.datetime.now(),
                     bullet_delay=datetime.datetime.now()
                 )
-                all_players[client_address[0]] = player2
+                player2.set_position(player2_state.x_loc, player2_state.y_loc)
+                all_players[client_address[0]] = player2_state
                 addresses.append(client_address)
 
         # get initial stuff from client, used to send data to client to determine who is who on client side
