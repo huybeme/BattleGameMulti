@@ -98,47 +98,35 @@ def process_player_movement(player_move: PlayerState.PlayerMovement, client_addr
     delta_y = 0
 
     if player_move.keys[str(arcade.key.UP)] and player_move.keys[str(arcade.key.RIGHT)]:
-        # delta_y = speed
-        # delta_x = speed
-        player_info.y_loc += speed
-        player_info.x_loc += speed
+        delta_y = speed
+        delta_x = speed
         player_info.face_angle = 45
     elif player_move.keys[str(arcade.key.UP)] and player_move.keys[str(arcade.key.LEFT)]:
-        # delta_y = speed
-        # delta_x = -speed
-        player_info.y_loc += speed
-        player_info.x_loc -= speed
+        delta_y = speed
+        delta_x = -speed
         player_info.face_angle = 135
     elif player_move.keys[str(arcade.key.DOWN)] and player_move.keys[str(arcade.key.LEFT)]:
-        # delta_y = -speed
-        # delta_x = -speed
-        player_info.y_loc -= speed
-        player_info.x_loc -= speed
+        delta_y = -speed
+        delta_x = -speed
         player_info.face_angle = 225
     elif player_move.keys[str(arcade.key.DOWN)] and player_move.keys[str(arcade.key.RIGHT)]:
-        # delta_y = -speed
-        # delta_x = speed
-        player_info.y_loc -= speed
-        player_info.x_loc += speed
+        delta_y = -speed
+        delta_x = speed
         player_info.face_angle = 315
     elif player_move.keys[str(arcade.key.UP)]:
-        # delta_y = speed
-        player_info.y_loc += speed
+        delta_y = speed
         player_info.face_angle = 90
     elif player_move.keys[str(arcade.key.DOWN)]:
-        # delta_y = -speed
-        player_info.y_loc -= speed
+        delta_y = -speed
         player_info.face_angle = 270
     elif player_move.keys[str(arcade.key.LEFT)]:
-        # delta_x = -speed
-        player_info.x_loc -= speed
+        delta_x = -speed
         player_info.face_angle = 180
     elif player_move.keys[str(arcade.key.RIGHT)]:
-        # delta_x = speed
-        player_info.x_loc += speed
+        delta_x = speed
         player_info.face_angle = 0
-    # player_info.x_loc += delta_x
-    # player_info.y_loc += delta_y
+    player_info.x_loc += delta_x
+    player_info.y_loc += delta_y
 
     delta_weapon = 0
     if player_move.keys[str(arcade.key.S)] or player_move.keys[str(arcade.key.A)]:
