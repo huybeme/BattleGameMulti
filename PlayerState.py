@@ -43,6 +43,7 @@ class PlayerMovement:
 @dataclass
 class GameState:
     player_states: Dict[str, PlayerState]
-    # barrel_state: Dict[str, BarrelState]
+    level_switch: False
+    level_num: 1
     # need a game state to keep track of gameover and/or round so proper resets happen
     # in the game on the client side

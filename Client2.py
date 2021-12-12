@@ -1499,19 +1499,20 @@ async def communication_with_server(client: TiledWindow, event_loop):  # client 
     if player_dict[client.ip_addr].id == 1:
         player = client.player_1
         player2 = client.player_2
-        player2_ip_addr = ip_addresses[1]
-    else:
-        player = client.player_2
-        player2 = client.player_1
-        player2_ip_addr = ip_addresses[0]
+        # player2_ip_addr = ip_addresses[1]
+    # else:
+    #     player = client.player_2
+    #     player2 = client.player_1
+    #     player2_ip_addr = ip_addresses[0]
 
+    player = client.player_2
 
     while True:
         keystate = json.dumps(client.actions.keys)
         UDPClientSocket.sendto(str.encode(keystate), (client.server_address, int(client.server_port)))
         data_packet = UDPClientSocket.recvfrom(1024)
         data = data_packet[0]   # get the encoded string
-        decoded_data: PlayerState.GameState = PlayerState.GameState.from_json(data)
+        gamestate_data: PlayerState.GameState = PlayerState.GameState.from_json(data)
 
         player_dict = decoded_data.player_states    # will contain all_players
 
@@ -1523,13 +1524,17 @@ async def communication_with_server(client: TiledWindow, event_loop):  # client 
         player.is_shooting = player1_info.shooting
         player.is_cannon_shooting = player1_info.weapon_shooting
 
-        player2_info: PlayerState.PlayerState = player_dict[player2_ip_addr]
-        player2.center_x = player2_info.x_loc
-        player2.center_y = player2_info.y_loc
-        player2.weapon.angle = player2_info.weapon_angle
-        player2.face_angle = player2_info.face_angle
-        player2.is_shooting = player2_info.shooting
-        player2.is_cannon_shooting = player2_info.weapon_shooting
+        if player.lives == 0 or client.player_2.lives == 0:
+            gamestate_data.level_switch = True
+            gamestate_data.level_num += 1
+
+        # player2_info: PlayerState.PlayerState = player_dict[player2_ip_addr]
+        # player2.center_x = player2_info.x_loc
+        # player2.center_y = player2_info.y_loc
+        # player2.weapon.angle = player2_info.weapon_angle
+        # player2.face_angle = player2_info.face_angle
+        # player2.is_shooting = player2_info.shooting
+        # player2.is_cannon_shooting = player2_info.weapon_shooting
 
 
 
