@@ -252,7 +252,8 @@ def process_game_info_state():
 def main():
     server_address = find_ip_address()
     print(f"Server address is {server_address} on port {SERVER_PORT}")
-    gameInfo = PlayerState.GameInformation(False, 1)
+    gameInfo = PlayerState.GameInformation(level_switch=False, level_num=1, player1_lives=5, player1_score=0,
+                                           player2_lives=5, player2_score=0, player_died=0)
     gameState = PlayerState.GameState(all_players, gameInfo)
 
     # create a socket and bind it to the address and port

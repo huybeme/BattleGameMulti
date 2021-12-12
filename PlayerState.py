@@ -43,6 +43,11 @@ class PlayerMovement:
 class GameInformation:
     level_switch: bool
     level_num: int
+    player1_lives: int
+    player1_score: int
+    player2_lives: int
+    player2_score: int
+    player_died: int        # 0 is noone, 1 is player1, 2 is player2
 
 
 @dataclass_json

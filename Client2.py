@@ -1520,8 +1520,11 @@ async def communication_with_server(client: TiledWindow, event_loop):  # client 
         data = data_packet[0]   # get the encoded string
         gamestate_data: PlayerState.GameState = PlayerState.GameState.from_json(data)
 
+        # get playerstates and gameinformation data
         player_dict = gamestate_data.player_states    # will contain all_players
+        game_info: PlayerState.GameInformation = gamestate_data.game_state
 
+        # update client player information based on playerstate data
         player1_info: PlayerState.PlayerState = player_dict[client.ip_addr]  # get info of your ip
         player.center_x = player1_info.x_loc
         player.center_y = player1_info.y_loc
@@ -1529,6 +1532,8 @@ async def communication_with_server(client: TiledWindow, event_loop):  # client 
         player.face_angle = player1_info.face_angle
         player.is_shooting = player1_info.shooting
         player.is_cannon_shooting = player1_info.weapon_shooting
+        game_info.player1_lives = player.lives
+        game_info.player1_score = player.score
 
         player2_info: PlayerState.PlayerState = player_dict[player2_ip_addr]
         player2.center_x = player2_info.x_loc
@@ -1537,17 +1542,22 @@ async def communication_with_server(client: TiledWindow, event_loop):  # client 
         player2.face_angle = player2_info.face_angle
         player2.is_shooting = player2_info.shooting
         player2.is_cannon_shooting = player2_info.weapon_shooting
+        game_info.player2_lives = player2.lives
+        game_info.player2_score = player2.score
 
         # update and send server game information
-        game_info: PlayerState.GameInformation = gamestate_data.game_state
-
         if client.next_level:
             game_info.level_switch = True
             game_info.level_num += 1
             print("someone died")
             client.next_level = False
+        if player.lives == 0:
+            game_info.player_died = 1
+        elif player2.lives == 0:
+            game_info.player_died = 2
 
-        game_info_list = [game_info.level_switch, game_info.level_num]
+        game_info_list = [game_info.level_switch, game_info.level_num, game_info.player1_lives, game_info.player1_score,
+                          game_info.player_died]
         game_info_data = json.dumps(game_info_list)
         UDPClientSocket.sendto(str.encode(game_info_data), (client.server_address, int(client.server_port)))
 
