@@ -306,30 +306,52 @@ def main():
         message = data_packet[0]  # data stored here within tuple
         client_address = data_packet[1]  # client IP addr is stored here, nothing beyond [1]
 
-        json_data = json.loads(message)
-        player_move: PlayerState.PlayerMovement = PlayerState.PlayerMovement()
-        player_move.keys = json_data
-        process_player_movement(player_move, client_address, gameState)
+        json_data = json.loads(message)     # type dict
 
-        check_for_collision(gameState, client_address)
+        try:
+            data = dict(json_data)
+            player_move: PlayerState.PlayerMovement = PlayerState.PlayerMovement()
+            player_move.keys = data
+            process_player_movement(player_move, client_address, gameState)
 
-        # send client playerstate positions
-        response = gameState.to_json()
-        UDPServerSocket.sendto(str.encode(response), client_address)
+            check_for_collision(gameState, client_address)
+
+            # send client playerstate positions
+            response = gameState.to_json()
+            UDPServerSocket.sendto(str.encode(response), client_address)
+        except:
+            if not json_data[0]:
+                gameInfo.level_switch = False
+            else:
+                gameInfo.level_num += 1
+                gameInfo.level_switch = False
+                if gameInfo.level_num == 4:
+                    gameInfo.level_num = 1
+                update_game_state(gameState.game_state, gameState)
+
+        # player_move: PlayerState.PlayerMovement = PlayerState.PlayerMovement()
+        # player_move.keys = json_data
+        # process_player_movement(player_move, client_address, gameState)
+        #
+        # check_for_collision(gameState, client_address)
+        #
+        # # send client playerstate positions
+        # response = gameState.to_json()
+        # UDPServerSocket.sendto(str.encode(response), client_address)
 
         # get game information from client (next level and level number)
-        game_info_data = UDPServerSocket.recvfrom(1024)
-        game_info_string = game_info_data[0]
-        if get_game_info(game_info_string.decode())[0] == "false":
-            print(False)
-            gameInfo.level_switch = False
-        elif get_game_info(game_info_string.decode())[0] == "true":
-            print(True)
-            gameInfo.level_num += 1
-            gameInfo.level_switch = False
-            if gameInfo.level_num == 4:
-                gameInfo.level_num = 1
-            update_game_state(gameState.game_state, gameState)
+        # game_info_data = UDPServerSocket.recvfrom(1024)
+        # game_info_string = game_info_data[0]    # type bytes
+        # game_data = json.loads(game_info_string)    # type list
+        # print(game_info_string, type(game_info_string))
+        # if get_game_info(game_info_string.decode())[0] == "false":
+        #     gameInfo.level_switch = False
+        # elif get_game_info(game_info_string.decode())[0] == "true":
+        #     gameInfo.level_num += 1
+        #     gameInfo.level_switch = False
+        #     if gameInfo.level_num == 4:
+        #         gameInfo.level_num = 1
+        #     update_game_state(gameState.game_state, gameState)
 
 
 if __name__ == '__main__':
