@@ -283,6 +283,7 @@ class TiledWindow(arcade.Window):
         self.server_port = server_port
         self.actions = PlayerState.PlayerMovement()
         self.from_server = ""
+        self.next_level = False
 
         self.round = 1
         self.game_frame = 0
@@ -786,6 +787,8 @@ class TiledWindow(arcade.Window):
         self.physics_engine_wall_p2 = arcade.PhysicsEngineSimple(
             self.player_2, self.wall_list
         )
+
+        self.next_level = True
 
     def check_game(self):
         if self.player_1.lives == 0 and self.round < 3:
@@ -1499,13 +1502,13 @@ async def communication_with_server(client: TiledWindow, event_loop):  # client 
     if player_dict[client.ip_addr].id == 1:
         player = client.player_1
         player2 = client.player_2
-        # player2_ip_addr = ip_addresses[1]
-    # else:
-    #     player = client.player_2
-    #     player2 = client.player_1
-    #     player2_ip_addr = ip_addresses[0]
+        player2_ip_addr = ip_addresses[1]
+    else:
+        player = client.player_2
+        player2 = client.player_1
+        player2_ip_addr = ip_addresses[0]
 
-    player = client.player_2
+    # player = client.player_2
 
     while True:
         keystate = json.dumps(client.actions.keys)
@@ -1524,17 +1527,19 @@ async def communication_with_server(client: TiledWindow, event_loop):  # client 
         player.is_shooting = player1_info.shooting
         player.is_cannon_shooting = player1_info.weapon_shooting
 
-        # if player.lives == 0 or client.player_2.lives == 0:
-        #     gamestate_data.level_switch = True
-        #     gamestate_data.level_num += 1
+        if client.next_level:   # move this below player 2
+            gamestate_data.level_switch = True
+            gamestate_data.level_num += 1
+            print("someone died")
+            client.next_level = False
 
-        # player2_info: PlayerState.PlayerState = player_dict[player2_ip_addr]
-        # player2.center_x = player2_info.x_loc
-        # player2.center_y = player2_info.y_loc
-        # player2.weapon.angle = player2_info.weapon_angle
-        # player2.face_angle = player2_info.face_angle
-        # player2.is_shooting = player2_info.shooting
-        # player2.is_cannon_shooting = player2_info.weapon_shooting
+        player2_info: PlayerState.PlayerState = player_dict[player2_ip_addr]
+        player2.center_x = player2_info.x_loc
+        player2.center_y = player2_info.y_loc
+        player2.weapon.angle = player2_info.weapon_angle
+        player2.face_angle = player2_info.face_angle
+        player2.is_shooting = player2_info.shooting
+        player2.is_cannon_shooting = player2_info.weapon_shooting
 
 
 

@@ -149,14 +149,11 @@ def check_for_collision(gamestate: PlayerState.GameState, client_address: str):
             player_info.x_loc -= cf
         player.set_position(player_info.x_loc, player_info.y_loc)
 
-    # if gamestate.level_switch:
-    #     pass
-
 
 def main():
     server_address = find_ip_address()
     print(f"Server address is {server_address} on port {SERVER_PORT}")
-    gameState = PlayerState.GameState(all_players)
+    gameState = PlayerState.GameState(all_players, False, 1)
 
     # create a socket and bind it to the address and port
     UDPServerSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
@@ -165,7 +162,7 @@ def main():
     addresses = []
 
     # sort who is who for players
-    while len(all_players) != 1:
+    while len(all_players) != 2:
         data_packet = UDPServerSocket.recvfrom(1024)  # sets the packet size, next lines won't run until this receives
         message = data_packet[0]  # data stored here within tuple
         client_address = data_packet[1]  # client IP addr is stored here, nothing beyond [1]
@@ -175,8 +172,7 @@ def main():
                 print(f"player 1: {client_address[0]} added")
                 player1: PlayerState.PlayerState = PlayerState.PlayerState(
                     id=1, x_loc=80, y_loc=80, face_angle=90, weapon_angle=0, shooting=False, weapon_shooting=False,
-                    last_update=datetime.datetime.now(),
-                    bullet_delay=datetime.datetime.now()
+                    last_update=datetime.datetime.now(), bullet_delay=datetime.datetime.now()
                 )
                 player.set_position(player1.x_loc, player1.y_loc)
                 all_players[client_address[0]] = player1
@@ -201,7 +197,7 @@ def main():
     # send list of IP addresses to client
     message = json.dumps(addresses)
     UDPServerSocket.sendto(str.encode(message), addresses[0])
-    # UDPServerSocket.sendto(str.encode(message), addresses[1])
+    UDPServerSocket.sendto(str.encode(message), addresses[1])
 
     while (True):
         data_packet = UDPServerSocket.recvfrom(1024)  # sets the packet size, next lines won't run until this receives
@@ -215,6 +211,7 @@ def main():
         check_for_collision(gameState, client_address)
         response = gameState.to_json()
         UDPServerSocket.sendto(str.encode(response), client_address)
+
 
 
 if __name__ == '__main__':
