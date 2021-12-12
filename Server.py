@@ -178,12 +178,30 @@ def check_for_collision(gamestate: PlayerState.GameState, client_address: str):
             player_info.y_loc += cf
         elif player_info.face_angle == 0:
             player_info.x_loc -= cf
+        player1.set_position(player_info.x_loc, player_info.y_loc)
 
-        if player_info.id == 1:
-            player1.set_position(player_info.x_loc, player_info.y_loc)
-        elif player_info.id == 2:
-            player2.set_position(player_info.x_loc, player_info.y_loc)
-
+    if player2.collides_with_list(wall_list):
+        if player_info.face_angle == 135:
+            player_info.x_loc += cf
+            player_info.y_loc -= cf
+        elif player_info.face_angle == 45:
+            player_info.x_loc -= cf
+            player_info.y_loc -= cf
+        elif player_info.face_angle == 225:
+            player_info.x_loc += cf
+            player_info.y_loc += cf
+        elif player_info.face_angle == 315:
+            player_info.x_loc -= cf
+            player_info.y_loc += cf
+        elif player_info.face_angle == 90:
+            player_info.y_loc -= cf
+        elif player_info.face_angle == 180:
+            player_info.x_loc += cf
+        elif player_info.face_angle == 270:
+            player_info.y_loc += cf
+        elif player_info.face_angle == 0:
+            player_info.x_loc -= cf
+        player2.set_position(player_info.x_loc, player_info.y_loc)
 
 def main():
     server_address = find_ip_address()
