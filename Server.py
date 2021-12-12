@@ -191,6 +191,7 @@ async def communication_with_client(server: GameWindow, event_loop, gamestate, s
         message = data_packet[0]  # data stored here within tuple
         client_address = data_packet[1]  # client IP addr is stored here, nothing beyond [1]
 
+
         json_data = json.loads(message)
 
         player_move: PlayerState.PlayerMovement = PlayerState.PlayerMovement()

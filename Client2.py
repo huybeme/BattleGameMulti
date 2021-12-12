@@ -1531,6 +1531,7 @@ async def communication_with_server(client: TiledWindow, event_loop):  # client 
         player2 = client.player_1
         player2_ip_addr = ip_addresses[0]
 
+
     player = client.player_2
 
     while True:
