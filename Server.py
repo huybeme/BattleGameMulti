@@ -63,43 +63,73 @@ def process_player_movement(player_move: PlayerState.PlayerMovement, client_addr
     delta_y = 0
 
     if player_move.keys[str(arcade.key.UP)] and player_move.keys[str(arcade.key.RIGHT)]:
-        player1.center_y += 3
-        player1.center_x += 3
+        if player_info.id == 1:
+            player1.center_y += 3
+            player1.center_x += 3
+        elif player_info.id == 2:
+            player2.center_y += 3
+            player2.center_x += 3
         delta_y = 3
         delta_x = 3
         player_info.face_angle = 45
     elif player_move.keys[str(arcade.key.UP)] and player_move.keys[str(arcade.key.LEFT)]:
-        player1.center_y += 3
-        player1.center_x -= 3
+        if player_info.id == 1:
+            player1.center_y += 3
+            player1.center_x -= 3
+        elif player_info.id == 2:
+            player2.center_y += 3
+            player2.center_x -= 3
         delta_y = 3
         delta_x = -3
         player_info.face_angle = 135
     elif player_move.keys[str(arcade.key.DOWN)] and player_move.keys[str(arcade.key.LEFT)]:
-        player1.center_y -= 3
-        player1.center_x -= 3
+        if player_info.id == 1:
+            player1.center_y -= 3
+            player1.center_x -= 3
+        elif player_info.id == 2:
+            player2.center_y -= 3
+            player2.center_x -= 3
         delta_y = -3
         delta_x = -3
         player_info.face_angle = 225
     elif player_move.keys[str(arcade.key.DOWN)] and player_move.keys[str(arcade.key.RIGHT)]:
-        player1.center_y -= 3
-        player1.center_x += 3
+        if player_info.id == 1:
+            player1.center_y -= 3
+            player1.center_x += 3
+        elif player_info.id == 2:
+            player2.center_y -= 3
+            player2.center_x += 3
         delta_y = -3
         delta_x = 3
         player_info.face_angle = 315
     elif player_move.keys[str(arcade.key.UP)]:
+        if player_info.id == 1:
+            player1.center_y += 3
+        elif player_info.id == 2:
+            player2.center_y += 3
         delta_y = 3
-        player1.center_y += 3
         player_info.face_angle = 90
     elif player_move.keys[str(arcade.key.DOWN)]:
+        if player_info.id == 1:
+            player1.center_y -= 3
+        elif player_info.id == 2:
+            player2.center_y -= 3
         delta_y = -3
-        player1.center_y -= 3
         player_info.face_angle = 270
     elif player_move.keys[str(arcade.key.LEFT)]:
-        player1.center_x -= 3
+        if player_info.id == 1:
+            player1.center_x -= 3
+            print("player 1 collision")
+        elif player_info.id == 2:
+            player2.center_x -= 3
+            print("player 2 collision")
         delta_x = -3
         player_info.face_angle = 180
     elif player_move.keys[str(arcade.key.RIGHT)]:
-        player1.center_x += 3
+        if player_info.id == 1:
+            player1.center_x += 3
+        elif player_info.id == 2:
+            player2.center_x += 3
         delta_x = 3
         player_info.face_angle = 0
     player_info.x_loc += delta_x
@@ -148,7 +178,11 @@ def check_for_collision(gamestate: PlayerState.GameState, client_address: str):
             player_info.y_loc += cf
         elif player_info.face_angle == 0:
             player_info.x_loc -= cf
-        player1.set_position(player_info.x_loc, player_info.y_loc)
+
+        if player_info.id == 1:
+            player1.set_position(player_info.x_loc, player_info.y_loc)
+        elif player_info.id == 2:
+            player2.set_position(player_info.x_loc, player_info.y_loc)
 
 
 def main():
