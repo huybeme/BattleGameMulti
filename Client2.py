@@ -1511,8 +1511,11 @@ async def communication_with_server(client: TiledWindow, event_loop):  # client 
     # player = client.player_2
 
     while True:
+        # send server keys pressed
         keystate = json.dumps(client.actions.keys)
         UDPClientSocket.sendto(str.encode(keystate), (client.server_address, int(client.server_port)))
+
+        # get playerstate positions
         data_packet = UDPClientSocket.recvfrom(1024)
         data = data_packet[0]   # get the encoded string
         gamestate_data: PlayerState.GameState = PlayerState.GameState.from_json(data)
@@ -1527,9 +1530,18 @@ async def communication_with_server(client: TiledWindow, event_loop):  # client 
         player.is_shooting = player1_info.shooting
         player.is_cannon_shooting = player1_info.weapon_shooting
 
+        player2_info: PlayerState.PlayerState = player_dict[player2_ip_addr]
+        player2.center_x = player2_info.x_loc
+        player2.center_y = player2_info.y_loc
+        player2.weapon.angle = player2_info.weapon_angle
+        player2.face_angle = player2_info.face_angle
+        player2.is_shooting = player2_info.shooting
+        player2.is_cannon_shooting = player2_info.weapon_shooting
+
+        # update and send server game information
         game_info: PlayerState.GameInformation = gamestate_data.game_state
 
-        if client.next_level:   # move this below player 2
+        if client.next_level:
             game_info.level_switch = True
             game_info.level_num += 1
             print("someone died")
@@ -1539,13 +1551,7 @@ async def communication_with_server(client: TiledWindow, event_loop):  # client 
         game_info_data = json.dumps(game_info_list)
         UDPClientSocket.sendto(str.encode(game_info_data), (client.server_address, int(client.server_port)))
 
-        player2_info: PlayerState.PlayerState = player_dict[player2_ip_addr]
-        player2.center_x = player2_info.x_loc
-        player2.center_y = player2_info.y_loc
-        player2.weapon.angle = player2_info.weapon_angle
-        player2.face_angle = player2_info.face_angle
-        player2.is_shooting = player2_info.shooting
-        player2.is_cannon_shooting = player2_info.weapon_shooting
+
 
 
 def main():

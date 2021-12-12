@@ -287,6 +287,7 @@ def main():
     UDPServerSocket.sendto(str.encode(message), addresses[1])
 
     while (True):
+        # get key movements from client
         data_packet = UDPServerSocket.recvfrom(1024)  # sets the packet size, next lines won't run until this receives
         message = data_packet[0]  # data stored here within tuple
         client_address = data_packet[1]  # client IP addr is stored here, nothing beyond [1]
@@ -297,9 +298,11 @@ def main():
         process_player_movement(player_move, client_address, gameState)
         check_for_collision(gameState, client_address)
 
+        # send client playerstate positions
         response = gameState.to_json()
         UDPServerSocket.sendto(str.encode(response), client_address)
 
+        # get game information from client (next level and level number)
         game_info_data = UDPServerSocket.recvfrom(1024)
         game_info_string = game_info_data[0]
         if get_game_info(game_info_string.decode())[0] == "false":
