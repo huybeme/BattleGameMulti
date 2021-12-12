@@ -119,10 +119,8 @@ def process_player_movement(player_move: PlayerState.PlayerMovement, client_addr
     elif player_move.keys[str(arcade.key.LEFT)]:
         if player_info.id == 1:
             player1.center_x -= 3
-            print("player 1 collision")
         elif player_info.id == 2:
             player2.center_x -= 3
-            print("player 2 collision")
         delta_x = -3
         player_info.face_angle = 180
     elif player_move.keys[str(arcade.key.RIGHT)]:
@@ -152,6 +150,19 @@ def process_player_movement(player_move: PlayerState.PlayerMovement, client_addr
     if player_move.keys[str(arcade.key.F)] and shoot_delay:
         player_info.shooting = True
         player_info.bullet_delay = now
+
+
+def update_game_state(game_info: PlayerState.GameInformation, gamestate: PlayerState.GameState):
+    global map_string
+    global game_map
+    global wall_list
+    global map_scene
+    map_string = f"Assets/Battle_Ships_Map_{game_info.level_num}.json"
+    game_map = arcade.load_tilemap(map_string, layer_options=layer_options,
+                                   scaling=game.SPRITE_SCALING_TILES)
+    wall_list = game_map.sprite_lists["Solids"]
+    map_scene = arcade.Scene.from_tilemap(game_map)
+    print("moving onto next round")
 
 
 def check_for_collision(gamestate: PlayerState.GameState, client_address: str):
@@ -203,10 +214,32 @@ def check_for_collision(gamestate: PlayerState.GameState, client_address: str):
             player_info.x_loc -= cf
         player2.set_position(player_info.x_loc, player_info.y_loc)
 
+
+def get_game_info(data):
+    count = 1
+    boolean = ""
+    info = []
+    while count < len(data) - 1:
+        if data[count] == "f" or data[count] == "t":
+            while data[count] != ",":
+                boolean = boolean + data[count]
+                count += 1
+            info.append(boolean)
+
+        try:
+            num = int(data[count])
+            info.append(num)
+            count += 1
+        except:
+            count += 1
+        count += 1
+    return info
+
 def main():
     server_address = find_ip_address()
     print(f"Server address is {server_address} on port {SERVER_PORT}")
-    gameState = PlayerState.GameState(all_players, False, 1)
+    gameInfo = PlayerState.GameInformation(False, 1)
+    gameState = PlayerState.GameState(all_players, gameInfo)
 
     # create a socket and bind it to the address and port
     UDPServerSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
@@ -263,9 +296,20 @@ def main():
         player_move.keys = json_data
         process_player_movement(player_move, client_address, gameState)
         check_for_collision(gameState, client_address)
+
         response = gameState.to_json()
         UDPServerSocket.sendto(str.encode(response), client_address)
 
+        game_info_data = UDPServerSocket.recvfrom(1024)
+        game_info_string = game_info_data[0]
+        if get_game_info(game_info_string.decode())[0] == "false":
+            gameInfo.level_switch = False
+        else:
+            gameInfo.level_num += 1
+            gameInfo.level_switch = False
+            if gameInfo.level_num == 4:
+                gameInfo.level_num = 1
+            update_game_state(gameState.game_state, gameState)
 
 
 if __name__ == '__main__':

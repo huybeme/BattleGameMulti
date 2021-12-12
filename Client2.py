@@ -1527,11 +1527,17 @@ async def communication_with_server(client: TiledWindow, event_loop):  # client 
         player.is_shooting = player1_info.shooting
         player.is_cannon_shooting = player1_info.weapon_shooting
 
+        game_info: PlayerState.GameInformation = gamestate_data.game_state
+
         if client.next_level:   # move this below player 2
-            gamestate_data.level_switch = True
-            gamestate_data.level_num += 1
+            game_info.level_switch = True
+            game_info.level_num += 1
             print("someone died")
             client.next_level = False
+
+        game_info_list = [game_info.level_switch, game_info.level_num]
+        game_info_data = json.dumps(game_info_list)
+        UDPClientSocket.sendto(str.encode(game_info_data), (client.server_address, int(client.server_port)))
 
         player2_info: PlayerState.PlayerState = player_dict[player2_ip_addr]
         player2.center_x = player2_info.x_loc
@@ -1540,7 +1546,6 @@ async def communication_with_server(client: TiledWindow, event_loop):  # client 
         player2.face_angle = player2_info.face_angle
         player2.is_shooting = player2_info.shooting
         player2.is_cannon_shooting = player2_info.weapon_shooting
-
 
 
 def main():

@@ -38,12 +38,18 @@ class PlayerMovement:
         arcade.key.F: False
     }
 
+@dataclass_json
+@dataclass
+class GameInformation:
+    level_switch: bool
+    level_num: int
+
 
 @dataclass_json
 @dataclass
 class GameState:
     player_states: Dict[str, PlayerState]
-    level_switch: False
-    level_num: 1
+    game_state: GameInformation
+
     # need a game state to keep track of gameover and/or round so proper resets happen
     # in the game on the client side
