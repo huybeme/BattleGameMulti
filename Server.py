@@ -235,6 +235,20 @@ def get_game_info(data):
         count += 1
     return info
 
+
+def process_keystates(message, client_address, gamestate):
+    json_data = json.loads(message)
+    player_move: PlayerState.PlayerMovement = PlayerState.PlayerMovement()
+    player_move.keys = json_data
+    process_player_movement(player_move, client_address, gamestate)
+
+    check_for_collision(gamestate, client_address)
+
+
+def process_game_info_state():
+    pass
+
+
 def main():
     server_address = find_ip_address()
     print(f"Server address is {server_address} on port {SERVER_PORT}")
@@ -296,6 +310,7 @@ def main():
         player_move: PlayerState.PlayerMovement = PlayerState.PlayerMovement()
         player_move.keys = json_data
         process_player_movement(player_move, client_address, gameState)
+
         check_for_collision(gameState, client_address)
 
         # send client playerstate positions
@@ -306,8 +321,10 @@ def main():
         game_info_data = UDPServerSocket.recvfrom(1024)
         game_info_string = game_info_data[0]
         if get_game_info(game_info_string.decode())[0] == "false":
+            print(False)
             gameInfo.level_switch = False
-        else:
+        elif get_game_info(game_info_string.decode())[0] == "true":
+            print(True)
             gameInfo.level_num += 1
             gameInfo.level_switch = False
             if gameInfo.level_num == 4:
