@@ -18,10 +18,23 @@ class Player(arcade.Sprite):
         self.texture = player_block
 
 
+class Bullet(arcade.Sprite):
+    def __init__(self):
+        super().__init__()
+        self.texture = arcade.load_texture("./Assets/Player/spike_ball/spike_ball.png")
+        self.scale = 0.15
+
+
 # global variables
 SERVER_PORT = 25001
 all_players: Dict[str, PlayerState.PlayerState] = {}
 
+player1 = Player(0, 0)
+player2 = Player(0, 0)
+player_list = arcade.SpriteList()
+player_list.append(player1)
+player_list.append(player2)
+bullet_list = arcade.SpriteList()
 layer_options = {
     "Water": {"use_spatial_hash": True},
     "Beach": {"use_spatial_hash": True},
@@ -35,8 +48,7 @@ game_map = arcade.load_tilemap(map_string, layer_options=layer_options,
                                scaling=game.SPRITE_SCALING_TILES)
 wall_list = game_map.sprite_lists["Solids"]
 map_scene = arcade.Scene.from_tilemap(game_map)
-player1 = Player(0, 0)
-player2 = Player(0, 0)
+game_count = 0
 
 
 def find_ip_address():
@@ -147,9 +159,11 @@ def process_player_movement(player_move: PlayerState.PlayerMovement, client_addr
         player_info.shooting = True
         player_info.weapon_shooting = True
         player_info.bullet_delay = now
+        player_info.num_bullets -= 1
     if player_move.keys[str(arcade.key.F)] and shoot_delay:
         player_info.shooting = True
         player_info.bullet_delay = now
+        player_info.num_bullets -= 1
 
 
 def update_game_state(game_info: PlayerState.GameInformation, gamestate: PlayerState.GameState):
@@ -245,15 +259,40 @@ def process_keystates(message, client_address, gamestate):
     check_for_collision(gamestate, client_address)
 
 
-def process_game_info_state():
-    pass
+def process_player_shooting(gamestate: PlayerState.GameState, client_address: str):
+
+    dist_to_next_point = 10
+    cf = 7
+    player_info = gamestate.player_states[client_address[0]]
+
+    global bullet_list
+    global map_scene
+    if player_info.shooting:
+        bullet = Bullet()
+        player_info.num_bullets -= 1
+        if player_info.weapon_shooting:
+            print("shooting")
+            bullet.change_x = math.cos(math.radians(player_info.weapon_angle)) * dist_to_next_point
+            bullet.change_y = math.sin(math.radians(player_info.weapon_angle)) * dist_to_next_point
+        else:
+            bullet.change_x = math.cos(math.radians(player_info.face_angle)) * dist_to_next_point
+            bullet.change_y = math.sin(math.radians(player_info.face_angle)) * dist_to_next_point
+        bullet.set_position(player_info.x_loc + (cf * bullet.change_x), player_info.y_loc + (cf * bullet.center_y))
+        bullet_list.append(bullet)
+
+    for bullet in bullet_list:
+        bullet.center_x += bullet.change_x
+        bullet.center_y += bullet.change_y
+        if bullet.collides_with_list(wall_list):
+            bullet.remove_from_sprite_lists()
+    map_scene.add_sprite_list(name="bullets", sprite_list=bullet_list)
 
 
 def main():
     server_address = find_ip_address()
     print(f"Server address is {server_address} on port {SERVER_PORT}")
     gameInfo = PlayerState.GameInformation(level_switch=False, level_num=1, player1_lives=5, player1_score=0,
-                                           player2_lives=5, player2_score=0, player_died=0)
+                                           player2_lives=5, player2_score=0)
     gameState = PlayerState.GameState(all_players, gameInfo)
 
     # create a socket and bind it to the address and port
@@ -263,7 +302,7 @@ def main():
     addresses = []
 
     # sort who is who for players
-    while len(all_players) != 2:
+    while len(all_players) != 1:
         data_packet = UDPServerSocket.recvfrom(1024)  # sets the packet size, next lines won't run until this receives
         message = data_packet[0]  # data stored here within tuple
         client_address = data_packet[1]  # client IP addr is stored here, nothing beyond [1]
@@ -273,7 +312,7 @@ def main():
                 print(f"player 1: {client_address[0]} added")
                 player1_state: PlayerState.PlayerState = PlayerState.PlayerState(
                     id=1, x_loc=80, y_loc=80, face_angle=90, weapon_angle=0, shooting=False, weapon_shooting=False,
-                    last_update=datetime.datetime.now(), bullet_delay=datetime.datetime.now()
+                    last_update=datetime.datetime.now(), bullet_delay=datetime.datetime.now(), num_bullets=3
                 )
                 player1.set_position(player1_state.x_loc, player1_state.y_loc)
                 all_players[client_address[0]] = player1_state
@@ -283,7 +322,7 @@ def main():
                 player2_state: PlayerState.PlayerState = PlayerState.PlayerState(
                     id=2, x_loc=Client2.SCREEN_WIDTH - 64, y_loc=Client2.SCREEN_HEIGHT - 64, face_angle=270,
                     weapon_angle=0, shooting=False, weapon_shooting=False, last_update=datetime.datetime.now(),
-                    bullet_delay=datetime.datetime.now()
+                    bullet_delay=datetime.datetime.now(), num_bullets=3
                 )
                 player2.set_position(player2_state.x_loc, player2_state.y_loc)
                 all_players[client_address[0]] = player2_state
@@ -299,7 +338,7 @@ def main():
     # send list of IP addresses to client
     message = json.dumps(addresses)
     UDPServerSocket.sendto(str.encode(message), addresses[0])
-    UDPServerSocket.sendto(str.encode(message), addresses[1])
+    # UDPServerSocket.sendto(str.encode(message), addresses[1])
 
     while (True):
         # get key movements from client
@@ -307,38 +346,30 @@ def main():
         message = data_packet[0]  # data stored here within tuple
         client_address = data_packet[1]  # client IP addr is stored here, nothing beyond [1]
 
-        json_data = json.loads(message)     # type dict
+        json_data = json.loads(message)
 
-        try:
-            data = dict(json_data)
-            player_move: PlayerState.PlayerMovement = PlayerState.PlayerMovement()
-            player_move.keys = data
-            process_player_movement(player_move, client_address, gameState)
+        player_move: PlayerState.PlayerMovement = PlayerState.PlayerMovement()
+        player_move.keys = json_data
 
-            check_for_collision(gameState, client_address)
+        process_player_shooting(gameState, client_address)
+        process_player_movement(player_move, client_address, gameState)
+        check_for_collision(gameState, client_address)
 
-            # send client playerstate positions
-            response = gameState.to_json()
-            UDPServerSocket.sendto(str.encode(response), client_address)
-        except:
-            if not json_data[0]:
-                gameInfo.level_switch = False
-            else:
-                gameInfo.level_num += 1
-                gameInfo.level_switch = False
-                if gameInfo.level_num == 4:
-                    gameInfo.level_num = 1
-                update_game_state(gameState.game_state, gameState)
+        # send client playerstate positions
+        response = gameState.to_json()
+        UDPServerSocket.sendto(str.encode(response), client_address)
 
-        # player_move: PlayerState.PlayerMovement = PlayerState.PlayerMovement()
-        # player_move.keys = json_data
-        # process_player_movement(player_move, client_address, gameState)
-        #
-        # check_for_collision(gameState, client_address)
-        #
-        # # send client playerstate positions
-        # response = gameState.to_json()
-        # UDPServerSocket.sendto(str.encode(response), client_address)
+        global game_count
+        game_count += 1
+        if game_count % 1000 == 0:
+            print(gameInfo)
+            print(gameState)
+            try:
+                print(bullet_list[len(bullet_list)-1].center_x, bullet_list[len(bullet_list)-1].center_y)
+                print(bullet_list[len(bullet_list)-1].change_x, bullet_list[len(bullet_list)-1].change_y)
+                print(len(bullet_list), game_count)
+            except:
+                print("no bullets")
 
         # get game information from client (next level and level number)
         # game_info_data = UDPServerSocket.recvfrom(1024)

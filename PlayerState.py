@@ -15,6 +15,7 @@ class PlayerState:
     weapon_angle: float
     shooting: bool
     weapon_shooting: bool
+    num_bullets: int
     last_update: datetime.datetime
     bullet_delay: datetime.datetime
 
@@ -47,7 +48,6 @@ class GameInformation:
     player1_score: int
     player2_lives: int
     player2_score: int
-    player_died: int        # 0 is noone, 1 is player1, 2 is player2
 
 
 @dataclass_json

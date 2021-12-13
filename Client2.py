@@ -60,7 +60,7 @@ class WeaponSprite(arcade.Sprite):
 class BulletSprite(arcade.Sprite):
     def __init__(self, img_path: str, speed: int, scale: float, game_window):
         super().__init__(img_path)
-        self.speed = speed
+        # self.speed = speed
         self.scale = scale
         self.game = game_window
         self.player_id = 0
@@ -1502,11 +1502,11 @@ async def communication_with_server(client: TiledWindow, event_loop):  # client 
     if player_dict[client.ip_addr].id == 1:
         player = client.player_1
         player2 = client.player_2
-        player2_ip_addr = ip_addresses[1]
-    else:
-        player = client.player_2
-        player2 = client.player_1
-        player2_ip_addr = ip_addresses[0]
+    #     player2_ip_addr = ip_addresses[1]
+    # else:
+    #     player = client.player_2
+    #     player2 = client.player_1
+    #     player2_ip_addr = ip_addresses[0]
 
     player = client.player_2
 
@@ -1532,34 +1532,39 @@ async def communication_with_server(client: TiledWindow, event_loop):  # client 
         player.face_angle = player1_info.face_angle
         player.is_shooting = player1_info.shooting
         player.is_cannon_shooting = player1_info.weapon_shooting
-        game_info.player1_lives = player.lives
-        game_info.player1_score = player.score
+        player.lives = game_info.player1_lives
+        player.score = game_info.player1_score
 
-        player2_info: PlayerState.PlayerState = player_dict[player2_ip_addr]
-        player2.center_x = player2_info.x_loc
-        player2.center_y = player2_info.y_loc
-        player2.weapon.angle = player2_info.weapon_angle
-        player2.face_angle = player2_info.face_angle
-        player2.is_shooting = player2_info.shooting
-        player2.is_cannon_shooting = player2_info.weapon_shooting
-        game_info.player2_lives = player2.lives
-        game_info.player2_score = player2.score
+        if player.is_shooting:
+            print("shooting")
+        if player.is_cannon_shooting:
+            print("cannon shooting")
 
-        # update and send server game information
-        if client.next_level:
-            game_info.level_switch = True
-            game_info.level_num += 1
-            print("someone died")
-            client.next_level = False
-        if player.lives == 0:
-            game_info.player_died = 1
-        elif player2.lives == 0:
-            game_info.player_died = 2
+        # player2_info: PlayerState.PlayerState = player_dict[player2_ip_addr]
+        # player2.center_x = player2_info.x_loc
+        # player2.center_y = player2_info.y_loc
+        # player2.weapon.angle = player2_info.weapon_angle
+        # player2.face_angle = player2_info.face_angle
+        # player2.is_shooting = player2_info.shooting
+        # player2.is_cannon_shooting = player2_info.weapon_shooting
+        # player2.lives = game_info.player2_lives
+        # player2.score = game_info.player2_score
 
-        game_info_list = [game_info.level_switch, game_info.level_num, game_info.player1_lives, game_info.player1_score,
-                          game_info.player_died]
-        game_info_data = json.dumps(game_info_list)
-        UDPClientSocket.sendto(str.encode(game_info_data), (client.server_address, int(client.server_port)))
+        # # update and send server game information
+        # if client.next_level:
+        #     game_info.level_switch = True
+        #     game_info.level_num += 1
+        #     print("someone died")
+        #     client.next_level = False
+        # if player.lives == 0:
+        #     game_info.player_died = 1
+        # elif player2.lives == 0:
+        #     game_info.player_died = 2
+        #
+        # game_info_list = [game_info.level_switch, game_info.level_num, game_info.player1_lives, game_info.player1_score,
+        #                   game_info.player_died]
+        # game_info_data = json.dumps(game_info_list)
+        # UDPClientSocket.sendto(str.encode(game_info_data), (client.server_address, int(client.server_port)))
 
 
 
