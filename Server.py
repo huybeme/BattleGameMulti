@@ -255,6 +255,7 @@ def main():
     gameInfo = PlayerState.GameInformation(level_switch=False, level_num=1, player1_lives=5, player1_score=0,
                                            player2_lives=5, player2_score=0, player_died=0)
     gameState = PlayerState.GameState(all_players, gameInfo)
+    bulletState = PlayerState.BulletState(id=0, x_loc=0, y_loc=0)
 
     # create a socket and bind it to the address and port
     UDPServerSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
@@ -316,6 +317,9 @@ def main():
             process_player_movement(player_move, client_address, gameState)
 
             check_for_collision(gameState, client_address)
+
+            # Bullet Coll
+            check_for_collision(bulletState, client_address)
 
             # send client playerstate positions
             response = gameState.to_json()

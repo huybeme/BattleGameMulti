@@ -40,6 +40,43 @@ class PlayerMovement:
 
 @dataclass_json
 @dataclass
+class BulletState:
+    x_loc: int
+    y_loc: int
+    speed: int
+
+
+@dataclass_json
+@dataclass
+class BarrelState:
+    id: int
+    x_loc: int
+    y_loc: int
+
+
+@dataclass_json
+@dataclass
+class SpecialItemState:
+    id: int
+    type: int
+    x_loc: int
+    y_loc: int
+    player_collision: bool
+
+
+@dataclass_json
+@dataclass
+class WhirlpoolState:
+    id: int
+    state: int
+    x_loc: int
+    y_loc: int
+    player_collision: bool
+
+
+
+@dataclass_json
+@dataclass
 class GameInformation:
     level_switch: bool
     level_num: int
