@@ -152,18 +152,18 @@ def process_player_movement(player_move: PlayerState.PlayerMovement, client_addr
         delta_weapon = 3
     player_info.weapon_angle += delta_weapon
 
-    shoot_delay = player_info.bullet_delay + datetime.timedelta(seconds=0.3) < now
-    player_info.weapon_shooting = False
-    player_info.shooting = False
-    if player_move.keys[str(arcade.key.SPACE)] and shoot_delay:
-        player_info.shooting = True
-        player_info.weapon_shooting = True
-        player_info.bullet_delay = now
-        player_info.num_bullets -= 1
-    if player_move.keys[str(arcade.key.F)] and shoot_delay:
-        player_info.shooting = True
-        player_info.bullet_delay = now
-        player_info.num_bullets -= 1
+    # shoot_delay = player_info.bullet_delay + datetime.timedelta(seconds=0.3) < now
+    # player_info.weapon_shooting = False
+    # player_info.shooting = False
+    # if player_move.keys[str(arcade.key.SPACE)] and shoot_delay:
+    #     player_info.shooting = True
+    #     player_info.weapon_shooting = True
+    #     player_info.bullet_delay = now
+    #     player_info.num_bullets -= 1
+    # if player_move.keys[str(arcade.key.F)] and shoot_delay:
+    #     player_info.shooting = True
+    #     player_info.bullet_delay = now
+    #     player_info.num_bullets -= 1
 
 
 def update_game_state(game_info: PlayerState.GameInformation, gamestate: PlayerState.GameState):
@@ -259,11 +259,27 @@ def process_keystates(message, client_address, gamestate):
     check_for_collision(gamestate, client_address)
 
 
-def process_player_shooting(gamestate: PlayerState.GameState, client_address: str):
+def process_player_shooting(gamestate: PlayerState.GameState, client_address: str, player_move: PlayerState.PlayerMovement):
+    now = datetime.datetime.now()
+    player_info = gamestate.player_states[client_address[0]]
+
+    if player_info.last_update + datetime.timedelta(milliseconds=20) > now:
+        return
+    shoot_delay = player_info.bullet_delay + datetime.timedelta(seconds=0.3) < now
+    player_info.weapon_shooting = False
+    player_info.shooting = False
+    if player_move.keys[str(arcade.key.SPACE)] and shoot_delay:
+        player_info.shooting = True
+        player_info.weapon_shooting = True
+        player_info.bullet_delay = now
+        player_info.num_bullets -= 1
+    if player_move.keys[str(arcade.key.F)] and shoot_delay:
+        player_info.shooting = True
+        player_info.bullet_delay = now
+        player_info.num_bullets -= 1
 
     dist_to_next_point = 10
     cf = 7
-    player_info = gamestate.player_states[client_address[0]]
 
     global bullet_list
     global map_scene
@@ -351,7 +367,7 @@ def main():
         player_move: PlayerState.PlayerMovement = PlayerState.PlayerMovement()
         player_move.keys = json_data
 
-        process_player_shooting(gameState, client_address)
+        process_player_shooting(gameState, client_address, player_move)
         process_player_movement(player_move, client_address, gameState)
         check_for_collision(gameState, client_address)
 
@@ -362,8 +378,8 @@ def main():
         global game_count
         game_count += 1
         if game_count % 1000 == 0:
-            print(gameInfo)
-            print(gameState)
+            # print(gameInfo)
+            # print(gameState)
             try:
                 print(bullet_list[len(bullet_list)-1].center_x, bullet_list[len(bullet_list)-1].center_y)
                 print(bullet_list[len(bullet_list)-1].change_x, bullet_list[len(bullet_list)-1].change_y)
