@@ -107,6 +107,7 @@ all_players: Dict[str, PlayerState.PlayerState] = {}
 
 player1 = Player(0, 0, 1)
 player2 = Player(0, 0, 2)
+
 player_list = arcade.SpriteList()
 player_list.append(player1)
 player_list.append(player2)
@@ -313,36 +314,6 @@ def check_for_collision(gamestate: PlayerState.GameState, client_address: str):
             player_info.x_loc -= cf
         player2.set_position(player_info.x_loc, player_info.y_loc)
 
-#remove
-def get_game_info(data):
-    count = 1
-    boolean = ""
-    info = []
-    while count < len(data) - 1:
-        if data[count] == "f" or data[count] == "t":
-            while data[count] != ",":
-                boolean = boolean + data[count]
-                count += 1
-            info.append(boolean)
-
-        try:
-            num = int(data[count])
-            info.append(num)
-            count += 1
-        except:
-            count += 1
-        count += 1
-    return info
-
-# remove
-def process_keystates(message, client_address, gamestate):
-    json_data = json.loads(message)
-    player_move: PlayerState.PlayerMovement = PlayerState.PlayerMovement()
-    player_move.keys = json_data
-    process_player_movement(player_move, client_address, gamestate)
-
-    check_for_collision(gamestate, client_address)
-
 
 def process_player_shooting(gamestate: PlayerState.GameState, client_address: str,
                             player_move: PlayerState.PlayerMovement):
@@ -394,9 +365,7 @@ def process_player_shooting(gamestate: PlayerState.GameState, client_address: st
     global map_scene
     if player_info.shooting:
         bullet = Bullet()
-        player_info.num_bullets -= 1
         if player_info.weapon_shooting:
-            print("shooting")
             bullet.change_x = math.cos(math.radians(player_info.weapon_angle)) * dist_to_next_point
             bullet.change_y = math.sin(math.radians(player_info.weapon_angle)) * dist_to_next_point
         else:
