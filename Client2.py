@@ -1502,11 +1502,11 @@ async def communication_with_server(client: TiledWindow, event_loop):  # client 
     if player_dict[client.ip_addr].id == 1:
         player = client.player_1
         player2 = client.player_2
-    #     player2_ip_addr = ip_addresses[1]
-    # else:
-    #     player = client.player_2
-    #     player2 = client.player_1
-    #     player2_ip_addr = ip_addresses[0]
+        player2_ip_addr = ip_addresses[1]
+    else:
+        player = client.player_2
+        player2 = client.player_1
+        player2_ip_addr = ip_addresses[0]
 
     while True:
         # send server keys pressed
@@ -1533,15 +1533,15 @@ async def communication_with_server(client: TiledWindow, event_loop):  # client 
         player.lives = game_info.player1_lives
         player.score = game_info.player1_score
 
-        # player2_info: PlayerState.PlayerState = player_dict[player2_ip_addr]
-        # player2.center_x = player2_info.x_loc
-        # player2.center_y = player2_info.y_loc
-        # player2.weapon.angle = player2_info.weapon_angle
-        # player2.face_angle = player2_info.face_angle
-        # player2.is_shooting = player2_info.shooting
-        # player2.is_cannon_shooting = player2_info.weapon_shooting
-        # player2.lives = game_info.player2_lives
-        # player2.score = game_info.player2_score
+        player2_info: PlayerState.PlayerState = player_dict[player2_ip_addr]
+        player2.center_x = player2_info.x_loc
+        player2.center_y = player2_info.y_loc
+        player2.weapon.angle = player2_info.weapon_angle
+        player2.face_angle = player2_info.face_angle
+        player2.is_shooting = player2_info.shooting
+        player2.is_cannon_shooting = player2_info.weapon_shooting
+        player2.lives = game_info.player2_lives
+        player2.score = game_info.player2_score
 
         # # update and send server game information
         # if client.next_level:

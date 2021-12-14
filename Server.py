@@ -87,6 +87,8 @@ class GameWindow(arcade.Window):
                 bullet.remove_from_sprite_lists()
 
         self.player_list.update()
+        self.bullet_list.update()
+        self.map_scene.update()
 
     def on_draw(self):
         arcade.start_render()
@@ -238,19 +240,6 @@ def process_player_movement(player_move: PlayerState.PlayerMovement, client_addr
         delta_weapon = 3
     player_info.weapon_angle += delta_weapon
 
-    # shoot_delay = player_info.bullet_delay + datetime.timedelta(seconds=0.3) < now
-    # player_info.weapon_shooting = False
-    # player_info.shooting = False
-    # if player_move.keys[str(arcade.key.SPACE)] and shoot_delay:
-    #     player_info.shooting = True
-    #     player_info.weapon_shooting = True
-    #     player_info.bullet_delay = now
-    #     player_info.num_bullets -= 1
-    # if player_move.keys[str(arcade.key.F)] and shoot_delay:
-    #     player_info.shooting = True
-    #     player_info.bullet_delay = now
-    #     player_info.num_bullets -= 1
-
 
 def update_game_state(game_info: PlayerState.GameInformation, gamestate: PlayerState.GameState):
     global map_string
@@ -266,7 +255,7 @@ def update_game_state(game_info: PlayerState.GameInformation, gamestate: PlayerS
 
 
 def check_for_collision(gamestate: PlayerState.GameState, client_address: str):
-    cf = 3
+    cf = 3.5
     player_info = gamestate.player_states[client_address[0]]
     if player1.collides_with_list(wall_list):
         if player_info.face_angle == 135:
@@ -381,6 +370,9 @@ def process_player_shooting(gamestate: PlayerState.GameState, client_address: st
             player2.bullet_change_x = bullet.change_x
             player2.bullet_change_y = bullet.change_y
 
+    for player in player_list:
+        print(player.position)
+
     for bullet in bullet_list:
         bullet.center_x += bullet.change_x
         bullet.center_y += bullet.change_y
@@ -421,7 +413,7 @@ async def communication_with_client(server: GameWindow, event_loop, gamestate, s
         game_count += 1
         if game_count % 1000 == 0:
             # print(gameInfo)
-            # print(gameState)
+            print(gamestate)
             try:
                 print(bullet_list[len(bullet_list) - 1].center_x, bullet_list[len(bullet_list) - 1].center_y)
                 print(bullet_list[len(bullet_list) - 1].change_x, bullet_list[len(bullet_list) - 1].change_y)
@@ -444,7 +436,7 @@ def main():
     addresses = []
 
     # sort who is who for players
-    while len(all_players) != 1:
+    while len(all_players) != 2:
         data_packet = UDPServerSocket.recvfrom(1024)  # sets the packet size, next lines won't run until this receives
         message = data_packet[0]  # data stored here within tuple
         client_address = data_packet[1]  # client IP addr is stored here, nothing beyond [1]
@@ -456,18 +448,18 @@ def main():
                     id=1, x_loc=80, y_loc=80, face_angle=90, weapon_angle=0, shooting=False, weapon_shooting=False,
                     last_update=datetime.datetime.now(), bullet_delay=datetime.datetime.now(), num_bullets=3
                 )
-                player1.set_position(player1_state.x_loc, player1_state.y_loc)
                 all_players[client_address[0]] = player1_state
+                player1.set_position(player1_state.x_loc, player1_state.y_loc)
                 addresses.append(client_address)
             elif len(all_players) == 1:
                 print(f"player 2: {client_address[0]} added")
                 player2_state: PlayerState.PlayerState = PlayerState.PlayerState(
-                    id=2, x_loc=Client2.SCREEN_WIDTH - 64, y_loc=Client2.SCREEN_HEIGHT - 64, face_angle=270,
+                    id=2, x_loc=game.SCREEN_WIDTH - 80, y_loc=game.SCREEN_HEIGHT - 80, face_angle=270,
                     weapon_angle=0, shooting=False, weapon_shooting=False, last_update=datetime.datetime.now(),
                     bullet_delay=datetime.datetime.now(), num_bullets=3
                 )
-                player2.set_position(player2_state.x_loc, player2_state.y_loc)
                 all_players[client_address[0]] = player2_state
+                player2.set_position(player2_state.x_loc, player2_state.y_loc)
                 addresses.append(client_address)
 
         # get initial stuff from client, used to send data to client to determine who is who on client side
@@ -481,8 +473,12 @@ def main():
     # send list of IP addresses to client
     message = json.dumps(addresses)
     UDPServerSocket.sendto(str.encode(message), addresses[0])
-    # UDPServerSocket.sendto(str.encode(message), addresses[1])
+    UDPServerSocket.sendto(str.encode(message), addresses[1])
+    print(player1.position)
+    print(player2.position)
     print("addresses sent to client")
+    print(player1.position)
+    print(player2.position)
 
     window = GameWindow(player1, player2)
     server_thread = threading.Thread(target=setup_server_connection,
