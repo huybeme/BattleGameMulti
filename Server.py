@@ -388,8 +388,12 @@ def process_player_shooting(gamestate: PlayerState.GameState, client_address: st
             print("hit map wall")
             bullet.remove_from_sprite_lists()
         if bullet.collides_with_list(player_list):
-            print("hit someone")
+            if player_info.id == 1:
+                print("player 2 shot")
+            if player_info.id == 2:
+                print("player 1 shot")
             bullet.remove_from_sprite_lists()
+
     map_scene.add_sprite_list(name="bullets", sprite_list=bullet_list)
 
 
