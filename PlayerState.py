@@ -11,18 +11,17 @@ class PlayerState:
     id: int
     x_loc: float
     y_loc: float
-    lives: int
-    score: int
     face_angle: int
     weapon_angle: float
     shooting: bool
     weapon_shooting: bool
     num_bullets: int
     is_hit: bool
-    last_update: datetime.datetime
-    bullet_delay: datetime.datetime
     lives: int
     score: int
+    last_update: datetime.datetime
+    bullet_delay: datetime.datetime
+
 
 
 

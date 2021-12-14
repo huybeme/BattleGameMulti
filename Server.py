@@ -489,7 +489,8 @@ def main():
                 print(f"player 1: {client_address[0]} added")
                 player1_state: PlayerState.PlayerState = PlayerState.PlayerState(
                     id=1, x_loc=80, y_loc=80, face_angle=90, weapon_angle=0, shooting=False, weapon_shooting=False,
-                    last_update=datetime.datetime.now(), bullet_delay=datetime.datetime.now(), num_bullets=3, lives = 5, score = 0
+                    last_update=datetime.datetime.now(), bullet_delay=datetime.datetime.now(), num_bullets=3,
+                    is_hit = False, lives = 5, score = 0
                 )
                 player1.set_position(player1_state.x_loc, player1_state.y_loc)
                 all_players[client_address[0]] = player1_state
@@ -499,7 +500,7 @@ def main():
                 player2_state: PlayerState.PlayerState = PlayerState.PlayerState(
                     id=2, x_loc=Client2.SCREEN_WIDTH - 64, y_loc=Client2.SCREEN_HEIGHT - 64, face_angle=270,
                     weapon_angle=0, shooting=False, weapon_shooting=False, last_update=datetime.datetime.now(),
-                    bullet_delay=datetime.datetime.now(), num_bullets=3, lives = 5, score = 0
+                    bullet_delay=datetime.datetime.now(), num_bullets=3, is_hit = False, lives = 5, score = 0
                 )
                 player2.set_position(player2_state.x_loc, player2_state.y_loc)
                 all_players[client_address[0]] = player2_state
