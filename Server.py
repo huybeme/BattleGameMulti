@@ -1,5 +1,8 @@
+import asyncio
 import socket
 import json
+import threading
+
 import PlayerState
 from typing import Dict
 import datetime
@@ -7,6 +10,7 @@ import arcade
 import Client2
 import math
 import game
+import pathlib
 
 
 class Player(arcade.Sprite):
@@ -17,12 +21,79 @@ class Player(arcade.Sprite):
         player_block = arcade.make_soft_square_texture(64, [0, 0, 0])
         self.texture = player_block
 
+        self.is_shooting = False
+        self.weapon_shooting = False
+        self.face_angle = None
+        self.weapon_angle = None
+
+        self.bullet_change_x = None
+        self.bullet_change_y = None
+        self.num_bullets = 3
+
 
 class Bullet(arcade.Sprite):
     def __init__(self):
         super().__init__()
         self.texture = arcade.load_texture("./Assets/Player/spike_ball/spike_ball.png")
         self.scale = 0.15
+
+
+class GameWindow(arcade.Window):
+    def __init__(self, player1: Player, player2: Player):
+        super().__init__(game.SCREEN_WIDTH, game.SCREEN_HEIGHT, title="server window")
+
+        map_1_location = pathlib.Path.cwd() / "Assets/Battle_Ships_Map_1.json"
+        tile_map1 = arcade.load_tilemap(
+            map_1_location,
+            layer_options=layer_options,
+            scaling=game.SPRITE_SCALING_TILES,
+        )
+        self.wall_list = tile_map1.sprite_lists["Solids"]
+        self.map_scene = arcade.Scene.from_tilemap(tile_map1)
+
+        self.player1 = player1
+        self.player2 = player2
+
+        self.player_list = arcade.SpriteList()
+        self.player_list.append(self.player1)
+        self.player_list.append(self.player2)
+
+        self.bullet_list = arcade.SpriteList()
+
+    def on_update(self, delta_time: float):
+        if self.player1.is_shooting or self.player2.is_shooting:
+            bullet = Bullet()
+            if self.player1.is_shooting:
+                bullet.change_x = self.player1.bullet_change_x
+                bullet.change_y = self.player1.bullet_change_y
+                bullet.set_position(player1.center_x + (7 * bullet.change_x), player1.center_y + (7 * bullet.change_y))
+            else:
+                bullet.change_x = self.player2.bullet_change_x
+                bullet.change_y = self.player2.bullet_change_y
+                bullet.set_position(player2.center_x + (7 * bullet.change_x), player2.center_y + (7 * bullet.change_y))
+            self.bullet_list.append(bullet)
+
+        for bullet in self.bullet_list:
+            bullet.center_x += bullet.change_x
+            bullet.center_y += bullet.change_y
+            if arcade.check_for_collision_with_list(bullet, self.wall_list):
+                bullet.remove_from_sprite_lists()
+            if arcade.check_for_collision_with_list(bullet, self.player_list):
+                bullet.remove_from_sprite_lists()
+
+        self.player_list.update()
+
+    def on_draw(self):
+        arcade.start_render()
+        self.map_scene.draw()
+        self.player_list.draw()
+        self.bullet_list.draw()
+
+    def on_key_press(self, symbol: int, modifiers: int):
+        pass
+
+    def on_key_release(self, key, modifiers):
+        pass
 
 
 # global variables
@@ -48,7 +119,16 @@ game_map = arcade.load_tilemap(map_string, layer_options=layer_options,
                                scaling=game.SPRITE_SCALING_TILES)
 wall_list = game_map.sprite_lists["Solids"]
 map_scene = arcade.Scene.from_tilemap(game_map)
+map_scene.add_sprite_list("players", sprite_list=player_list)
 game_count = 0
+
+
+def setup_server_connection(server: GameWindow, gamestate, server_address, UDPServerSocket):
+    server_event_loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(server_event_loop)
+    server_event_loop.create_task(
+        communication_with_client(server, server_event_loop, gamestate, server_address, UDPServerSocket))
+    server_event_loop.run_forever()
 
 
 def find_ip_address():
@@ -228,7 +308,7 @@ def check_for_collision(gamestate: PlayerState.GameState, client_address: str):
             player_info.x_loc -= cf
         player2.set_position(player_info.x_loc, player_info.y_loc)
 
-
+#remove
 def get_game_info(data):
     count = 1
     boolean = ""
@@ -249,7 +329,7 @@ def get_game_info(data):
         count += 1
     return info
 
-
+# remove
 def process_keystates(message, client_address, gamestate):
     json_data = json.loads(message)
     player_move: PlayerState.PlayerMovement = PlayerState.PlayerMovement()
@@ -259,7 +339,8 @@ def process_keystates(message, client_address, gamestate):
     check_for_collision(gamestate, client_address)
 
 
-def process_player_shooting(gamestate: PlayerState.GameState, client_address: str, player_move: PlayerState.PlayerMovement):
+def process_player_shooting(gamestate: PlayerState.GameState, client_address: str,
+                            player_move: PlayerState.PlayerMovement):
     now = datetime.datetime.now()
     player_info = gamestate.player_states[client_address[0]]
 
@@ -268,15 +349,38 @@ def process_player_shooting(gamestate: PlayerState.GameState, client_address: st
     shoot_delay = player_info.bullet_delay + datetime.timedelta(seconds=0.3) < now
     player_info.weapon_shooting = False
     player_info.shooting = False
+    if player_info.id == 1:
+        player1.is_shooting = player_info.shooting
+        player1.weapon_shooting = player_info.weapon_shooting
+    if player_info.id == 2:
+        player2.is_shooting = player_info.shooting
+        player2.weapon_shooting = player_info.weapon_shooting
+
     if player_move.keys[str(arcade.key.SPACE)] and shoot_delay:
         player_info.shooting = True
         player_info.weapon_shooting = True
         player_info.bullet_delay = now
         player_info.num_bullets -= 1
+
+        if player_info.id == 1:
+            player1.is_shooting = player_info.shooting
+            player1.weapon_shooting = player_info.weapon_shooting
+            player1.num_bullets -= 1
+        if player_info.id == 2:
+            player2.is_shooting = player_info.shooting
+            player2.weapon_shooting = player_info.weapon_shooting
+            player2.num_bullets -= 1
     if player_move.keys[str(arcade.key.F)] and shoot_delay:
         player_info.shooting = True
         player_info.bullet_delay = now
         player_info.num_bullets -= 1
+
+        if player_info.id == 1:
+            player1.is_shooting = player_info.shooting
+            player1.num_bullets -= 1
+        if player_info.id == 2:
+            player2.is_shooting = player_info.shooting
+            player2.num_bullets -= 1
 
     dist_to_next_point = 10
     cf = 7
@@ -296,12 +400,56 @@ def process_player_shooting(gamestate: PlayerState.GameState, client_address: st
         bullet.set_position(player_info.x_loc + (cf * bullet.change_x), player_info.y_loc + (cf * bullet.center_y))
         bullet_list.append(bullet)
 
+        if player_info.id == 1:
+            player1.bullet_change_x = bullet.change_x
+            player1.bullet_change_y = bullet.change_y
+        if player_info.id == 2:
+            player1.bullet_change_x = bullet.change_x
+            player1.bullet_change_y = bullet.change_y
+
     for bullet in bullet_list:
         bullet.center_x += bullet.change_x
         bullet.center_y += bullet.change_y
         if bullet.collides_with_list(wall_list):
+            print("hit map wall")
+            bullet.remove_from_sprite_lists()
+        if bullet.collides_with_list(player_list):
+            print("hit someone")
             bullet.remove_from_sprite_lists()
     map_scene.add_sprite_list(name="bullets", sprite_list=bullet_list)
+
+
+async def communication_with_client(server: GameWindow, event_loop, gamestate, server_address, UDPServerSocket):
+    while (True):
+        # get key movements from client
+        data_packet = UDPServerSocket.recvfrom(1024)  # sets the packet size, next lines won't run until this receives
+        message = data_packet[0]  # data stored here within tuple
+        client_address = data_packet[1]  # client IP addr is stored here, nothing beyond [1]
+
+        json_data = json.loads(message)
+
+        player_move: PlayerState.PlayerMovement = PlayerState.PlayerMovement()
+        player_move.keys = json_data
+
+        process_player_shooting(gamestate, client_address, player_move)
+        process_player_movement(player_move, client_address, gamestate)
+        check_for_collision(gamestate, client_address)
+
+        # send client playerstate positions
+        response = gamestate.to_json()
+        UDPServerSocket.sendto(str.encode(response), client_address)
+
+        global game_count
+        game_count += 1
+        if game_count % 1000 == 0:
+            # print(gameInfo)
+            # print(gameState)
+            try:
+                print(bullet_list[len(bullet_list) - 1].center_x, bullet_list[len(bullet_list) - 1].center_y)
+                print(bullet_list[len(bullet_list) - 1].change_x, bullet_list[len(bullet_list) - 1].change_y)
+                print(len(bullet_list), game_count)
+            except:
+                print("no bullets")
 
 
 def main():
@@ -350,56 +498,65 @@ def main():
         player_move.keys = json_data
         response = gameState.to_json()
         UDPServerSocket.sendto(str.encode(response), client_address)
+    print("all players connected")
 
     # send list of IP addresses to client
     message = json.dumps(addresses)
     UDPServerSocket.sendto(str.encode(message), addresses[0])
     # UDPServerSocket.sendto(str.encode(message), addresses[1])
+    print("addresses sent to client")
 
-    while (True):
-        # get key movements from client
-        data_packet = UDPServerSocket.recvfrom(1024)  # sets the packet size, next lines won't run until this receives
-        message = data_packet[0]  # data stored here within tuple
-        client_address = data_packet[1]  # client IP addr is stored here, nothing beyond [1]
+    window = GameWindow(player1, player2)
+    server_thread = threading.Thread(target=setup_server_connection,
+                                     args=(window, gameState, server_address, UDPServerSocket),
+                                     daemon=True)
+    server_thread.start()
+    arcade.run()
 
-        json_data = json.loads(message)
+    # while (True):
+    #     # get key movements from client
+    #     data_packet = UDPServerSocket.recvfrom(1024)  # sets the packet size, next lines won't run until this receives
+    #     message = data_packet[0]  # data stored here within tuple
+    #     client_address = data_packet[1]  # client IP addr is stored here, nothing beyond [1]
+    #
+    #     json_data = json.loads(message)
+    #
+    #     player_move: PlayerState.PlayerMovement = PlayerState.PlayerMovement()
+    #     player_move.keys = json_data
+    #
+    #     process_player_shooting(gameState, client_address, player_move)
+    #     process_player_movement(player_move, client_address, gameState)
+    #     check_for_collision(gameState, client_address)
+    #
+    #     # send client playerstate positions
+    #     response = gameState.to_json()
+    #     UDPServerSocket.sendto(str.encode(response), client_address)
+    #
+    #     global game_count
+    #     game_count += 1
+    #     if game_count % 1000 == 0:
+    #         # print(gameInfo)
+    #         # print(gameState)
+    #         try:
+    #             print(bullet_list[len(bullet_list)-1].center_x, bullet_list[len(bullet_list)-1].center_y)
+    #             print(bullet_list[len(bullet_list)-1].change_x, bullet_list[len(bullet_list)-1].change_y)
+    #             print(len(bullet_list), game_count)
+    #         except:
+    #             print("no bullets")
 
-        player_move: PlayerState.PlayerMovement = PlayerState.PlayerMovement()
-        player_move.keys = json_data
-
-        process_player_shooting(gameState, client_address, player_move)
-        process_player_movement(player_move, client_address, gameState)
-        check_for_collision(gameState, client_address)
-
-        # send client playerstate positions
-        response = gameState.to_json()
-        UDPServerSocket.sendto(str.encode(response), client_address)
-
-        global game_count
-        game_count += 1
-        if game_count % 1000 == 0:
-            # print(gameInfo)
-            # print(gameState)
-            try:
-                print(bullet_list[len(bullet_list)-1].center_x, bullet_list[len(bullet_list)-1].center_y)
-                print(bullet_list[len(bullet_list)-1].change_x, bullet_list[len(bullet_list)-1].change_y)
-                print(len(bullet_list), game_count)
-            except:
-                print("no bullets")
-
-        # get game information from client (next level and level number)
-        # game_info_data = UDPServerSocket.recvfrom(1024)
-        # game_info_string = game_info_data[0]    # type bytes
-        # game_data = json.loads(game_info_string)    # type list
-        # print(game_info_string, type(game_info_string))
-        # if get_game_info(game_info_string.decode())[0] == "false":
-        #     gameInfo.level_switch = False
-        # elif get_game_info(game_info_string.decode())[0] == "true":
-        #     gameInfo.level_num += 1
-        #     gameInfo.level_switch = False
-        #     if gameInfo.level_num == 4:
-        #         gameInfo.level_num = 1
-        #     update_game_state(gameState.game_state, gameState)
+    # get game information from client (next level and level number)
+    # game_info_data = UDPServerSocket.recvfrom(1024)
+    # game_info_string = game_info_data[0]    # type bytes
+    # game_data = json.loads(game_info_string)    # type list
+    # print(game_info_string, type(game_info_string))
+    # if get_game_info(game_info_string.decode())[0] == "false":
+    #     gameInfo.level_switch = False
+    # elif get_game_info(game_info_string.decode())[0] == "true":
+    #     gameInfo.level_num += 1
+    #     gameInfo.level_switch = False
+    #     if gameInfo.level_num == 4:
+    #         gameInfo.level_num = 1
+    #     update_game_state(gameState.game_state, gameState)
 
 
 if __name__ == '__main__':
