@@ -370,9 +370,6 @@ def process_player_shooting(gamestate: PlayerState.GameState, client_address: st
             player2.bullet_change_x = bullet.change_x
             player2.bullet_change_y = bullet.change_y
 
-    for player in player_list:
-        print(player.position)
-
     for bullet in bullet_list:
         bullet.center_x += bullet.change_x
         bullet.center_y += bullet.change_y
