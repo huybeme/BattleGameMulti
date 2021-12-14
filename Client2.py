@@ -1508,8 +1508,6 @@ async def communication_with_server(client: TiledWindow, event_loop):  # client 
     #     player2 = client.player_1
     #     player2_ip_addr = ip_addresses[0]
 
-    player = client.player_2
-
     while True:
         # send server keys pressed
         keystate = json.dumps(client.actions.keys)
@@ -1534,11 +1532,6 @@ async def communication_with_server(client: TiledWindow, event_loop):  # client 
         player.is_cannon_shooting = player1_info.weapon_shooting
         player.lives = game_info.player1_lives
         player.score = game_info.player1_score
-
-        if player.is_shooting:
-            print("shooting")
-        if player.is_cannon_shooting:
-            print("cannon shooting")
 
         # player2_info: PlayerState.PlayerState = player_dict[player2_ip_addr]
         # player2.center_x = player2_info.x_loc

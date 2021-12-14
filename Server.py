@@ -14,12 +14,17 @@ import pathlib
 
 
 class Player(arcade.Sprite):
-    def __init__(self, xloc, yloc):
+    def __init__(self, xloc, yloc, player_num):
         super().__init__()
         self.center_x = xloc
         self.center_y = yloc
-        player_block = arcade.make_soft_square_texture(64, [0, 0, 0])
-        self.texture = player_block
+
+        if player_num == 1:
+            self.texture = arcade.load_texture("./Assets/Player/pirateship.png")
+            self.scale = 0.75
+        else:
+            self.texture = arcade.load_texture("./Assets/Player/lapras_start.png")
+            self.scale = 1
 
         self.is_shooting = False
         self.weapon_shooting = False
@@ -100,8 +105,8 @@ class GameWindow(arcade.Window):
 SERVER_PORT = 25001
 all_players: Dict[str, PlayerState.PlayerState] = {}
 
-player1 = Player(0, 0)
-player2 = Player(0, 0)
+player1 = Player(0, 0, 1)
+player2 = Player(0, 0, 2)
 player_list = arcade.SpriteList()
 player_list.append(player1)
 player_list.append(player2)
@@ -404,8 +409,8 @@ def process_player_shooting(gamestate: PlayerState.GameState, client_address: st
             player1.bullet_change_x = bullet.change_x
             player1.bullet_change_y = bullet.change_y
         if player_info.id == 2:
-            player1.bullet_change_x = bullet.change_x
-            player1.bullet_change_y = bullet.change_y
+            player2.bullet_change_x = bullet.change_x
+            player2.bullet_change_y = bullet.change_y
 
     for bullet in bullet_list:
         bullet.center_x += bullet.change_x
