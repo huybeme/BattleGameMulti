@@ -18,6 +18,7 @@ class PlayerState:
     shooting: bool
     weapon_shooting: bool
     num_bullets: int
+    is_hit: bool
     last_update: datetime.datetime
     bullet_delay: datetime.datetime
 
@@ -38,7 +39,8 @@ class PlayerMovement:
         arcade.key.D: False,
         arcade.key.E: False,
         arcade.key.SPACE: False,
-        arcade.key.F: False
+        arcade.key.F: False,
+        arcade.key.H: False
     }
 
 @dataclass_json
