@@ -35,6 +35,9 @@ class Player(arcade.Sprite):
         self.bullet_change_y = None
         self.num_bullets = 3
 
+        self.score = 0
+        self.lives = 0
+
 
 class Bullet(arcade.Sprite):
     def __init__(self):
@@ -87,6 +90,8 @@ class GameWindow(arcade.Window):
                 bullet.remove_from_sprite_lists()
 
         self.player_list.update()
+
+
 
     def on_draw(self):
         arcade.start_render()
@@ -148,6 +153,14 @@ def find_ip_address():
     finally:
         connection.close()
     return server_address
+
+
+def process_player_info(client_address: str, gamestate: PlayerState.GameState):
+    player_info = gamestate.player_states[client_address[0]]
+
+    print(player_info.lives)
+
+
 
 
 def process_player_movement(player_move: PlayerState.PlayerMovement, client_address: str,
@@ -390,8 +403,12 @@ def process_player_shooting(gamestate: PlayerState.GameState, client_address: st
         if bullet.collides_with_list(player_list):
             if player_info.id == 1:
                 print("player 2 shot")
+                player_info.lives -=1
+                print(player_info.lives)
             if player_info.id == 2:
                 print("player 1 shot")
+                player_info.lives -= 1
+                print(player_info.lives)
             bullet.remove_from_sprite_lists()
 
     map_scene.add_sprite_list(name="bullets", sprite_list=bullet_list)
@@ -408,10 +425,12 @@ async def communication_with_client(server: GameWindow, event_loop, gamestate, s
 
         player_move: PlayerState.PlayerMovement = PlayerState.PlayerMovement()
         player_move.keys = json_data
+        gameinfo = PlayerState.GameInformation = gamestate.game_state
 
         process_player_shooting(gamestate, client_address, player_move)
         process_player_movement(player_move, client_address, gamestate)
         check_for_collision(gamestate, client_address)
+        # process_player_info(client_address, gamestate)
 
         # send client playerstate positions
         response = gamestate.to_json()
@@ -453,7 +472,7 @@ def main():
             if len(all_players) < 1:
                 print(f"player 1: {client_address[0]} added")
                 player1_state: PlayerState.PlayerState = PlayerState.PlayerState(
-                    id=1, x_loc=80, y_loc=80, face_angle=90, weapon_angle=0, shooting=False, weapon_shooting=False,
+                    id=1, x_loc=80, y_loc=80, lives=5, score= 0, face_angle=90, weapon_angle=0, shooting=False, weapon_shooting=False,
                     last_update=datetime.datetime.now(), bullet_delay=datetime.datetime.now(), num_bullets=3
                 )
                 player1.set_position(player1_state.x_loc, player1_state.y_loc)
@@ -462,7 +481,7 @@ def main():
             elif len(all_players) == 1:
                 print(f"player 2: {client_address[0]} added")
                 player2_state: PlayerState.PlayerState = PlayerState.PlayerState(
-                    id=2, x_loc=Client2.SCREEN_WIDTH - 64, y_loc=Client2.SCREEN_HEIGHT - 64, face_angle=270,
+                    id=2, x_loc=Client2.SCREEN_WIDTH - 64, y_loc=Client2.SCREEN_HEIGHT - 64, lives=5, score= 0, face_angle=270,
                     weapon_angle=0, shooting=False, weapon_shooting=False, last_update=datetime.datetime.now(),
                     bullet_delay=datetime.datetime.now(), num_bullets=3
                 )

@@ -11,6 +11,8 @@ class PlayerState:
     id: int
     x_loc: float
     y_loc: float
+    lives: int
+    score: int
     face_angle: int
     weapon_angle: float
     shooting: bool

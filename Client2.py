@@ -1564,7 +1564,7 @@ async def communication_with_server(client: TiledWindow, event_loop):  # client 
 
 def main():
 
-    SERVER_ADDR = "10.0.0.241"
+    SERVER_ADDR = "192.168.0.82"
     SERVER_PORT = "25001"
 
     CLIENT_ADDR = find_ip_address()
