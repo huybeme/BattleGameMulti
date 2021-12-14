@@ -419,6 +419,15 @@ def process_player_shooting(gamestate: PlayerState.GameState, client_address: st
 
     map_scene.add_sprite_list(name="bullets", sprite_list=bullet_list)
 
+def process_player_info(gamestate: PlayerState.GameState, client_address: str):
+    game_state = gamestate.game_state
+    player_info = gamestate.player_states[client_address[0]]
+
+    if (player_info.id == 1):
+        player_info.lives = 5
+    else:
+        player_info.lives = 4
+    print(player_info.lives)
 
 async def communication_with_client(server: GameWindow, event_loop, gamestate, server_address, UDPServerSocket):
     while (True):
@@ -437,6 +446,7 @@ async def communication_with_client(server: GameWindow, event_loop, gamestate, s
         process_player_movement(player_move, client_address, gamestate)
         check_for_collision(gamestate, client_address)
         process_player_info(client_address, gamestate)
+        process_player_info(gamestate, client_address)
 
         # send client playerstate positions
         response = gamestate.to_json()
@@ -478,8 +488,8 @@ def main():
             if len(all_players) < 1:
                 print(f"player 1: {client_address[0]} added")
                 player1_state: PlayerState.PlayerState = PlayerState.PlayerState(
-                    id=1, x_loc=80, y_loc=80, lives=5, score= 0, face_angle=90, weapon_angle=0, shooting=False, weapon_shooting=False,
-                    last_update=datetime.datetime.now(), bullet_delay=datetime.datetime.now(), num_bullets=3, is_hit = False
+                    id=1, x_loc=80, y_loc=80, face_angle=90, weapon_angle=0, shooting=False, weapon_shooting=False,
+                    last_update=datetime.datetime.now(), bullet_delay=datetime.datetime.now(), num_bullets=3, lives = 5, score = 0
                 )
                 player1.set_position(player1_state.x_loc, player1_state.y_loc)
                 all_players[client_address[0]] = player1_state
@@ -487,9 +497,9 @@ def main():
             elif len(all_players) == 1:
                 print(f"player 2: {client_address[0]} added")
                 player2_state: PlayerState.PlayerState = PlayerState.PlayerState(
-                    id=2, x_loc=Client2.SCREEN_WIDTH - 64, y_loc=Client2.SCREEN_HEIGHT - 64, lives=5, score= 0, face_angle=270,
+                    id=2, x_loc=Client2.SCREEN_WIDTH - 64, y_loc=Client2.SCREEN_HEIGHT - 64, face_angle=270,
                     weapon_angle=0, shooting=False, weapon_shooting=False, last_update=datetime.datetime.now(),
-                    bullet_delay=datetime.datetime.now(), num_bullets=3, is_hit = False
+                    bullet_delay=datetime.datetime.now(), num_bullets=3, lives = 5, score = 0
                 )
                 player2.set_position(player2_state.x_loc, player2_state.y_loc)
                 all_players[client_address[0]] = player2_state

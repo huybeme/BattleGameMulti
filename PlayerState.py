@@ -21,6 +21,8 @@ class PlayerState:
     is_hit: bool
     last_update: datetime.datetime
     bullet_delay: datetime.datetime
+    lives: int
+    score: int
 
 
 
