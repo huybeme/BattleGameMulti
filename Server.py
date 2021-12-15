@@ -336,15 +336,12 @@ def update_game_state(game_info: PlayerState.GameInformation, gamestate: PlayerS
     map_scene = arcade.Scene.from_tilemap(game_map)
 
     barrel_coords = get_barrel_coords(gamestate.game_state.level_num)
-    print(barrel_coords)
-    count = 0
-    for barrels in barrel_list:
-        barrels.set_position(barrel_coords[count][0], barrel_coords[count][1])
-        gamestate.game_state.barrel_list[count][0] = barrel_coords[count][0]
-        gamestate.game_state.barrel_list[count][1] = barrel_coords[count][1]
-        count += 1
-        if count > 5:
-            count = 0
+
+    for i in range(6):
+        barrel_list.__getitem__(i).set_position(barrel_coords[i][0], barrel_coords[i][1])
+        gamestate.game_state.barrel_list[i][0] = barrel_coords[i][0]
+        gamestate.game_state.barrel_list[i][1] = barrel_coords[i][1]
+
 
     if gamestate.player_states[client_address[0]].id == 1:
         player1.set_position(80, 80)
@@ -482,20 +479,17 @@ def process_barrel_collision(gamestate: PlayerState.GameState, client_address: s
         delta_x = barrel_speed
         delta_y = -barrel_speed
 
-    count = 0
-    for barrel in barrel_list:
-        if player1.collides_with_sprite(barrel):
-            gamestate.game_state.barrel_list[count][0] += delta_x
-            gamestate.game_state.barrel_list[count][1] += delta_y
-            barrel.center_x += delta_x
-            barrel.center_y += delta_y
-        if player2.collides_with_sprite(barrel):
-            gamestate.game_state.barrel_list[count][0] += delta_x
-            gamestate.game_state.barrel_list[count][1] += delta_y
-            barrel.center_x += delta_x
-            barrel.center_y += delta_y
-        if count > 6:
-            count = 0
+    for i in range(6):
+        if player1.collides_with_sprite(barrel_list.__getitem__(i)):
+            gamestate.game_state.barrel_list[i][0] += delta_x
+            gamestate.game_state.barrel_list[i][1] += delta_y
+            barrel_list.__getitem__(i).center_x += delta_x
+            barrel_list.__getitem__(i).center_y += delta_y
+        if player2.collides_with_sprite(barrel_list.__getitem__(i)):
+            gamestate.game_state.barrel_list[i][0] += delta_x
+            gamestate.game_state.barrel_list[i][1] += delta_y
+            barrel_list.__getitem__(i).center_x += delta_x
+            barrel_list.__getitem__(i).center_y += delta_y
 
 
 
