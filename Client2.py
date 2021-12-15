@@ -1594,7 +1594,7 @@ async def communication_with_server(
         player2.lives = game_info.player2_lives
         player2.score = game_info.player2_score
 
-        # client.barrel_pos = gamestate_data.game_state.barrel_list
+        client.barrel_pos = gamestate_data.game_state.barrel_list
 
         client.round = game_info.level_num
         if game_info.level_num > client.current_round:
