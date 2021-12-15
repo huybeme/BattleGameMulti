@@ -20,7 +20,6 @@ class PlayerState:
     bullet_delay: datetime.datetime
 
 
-
 @dataclass_json
 @dataclass
 class PlayerMovement:
@@ -39,6 +38,7 @@ class PlayerMovement:
         arcade.key.F: False
     }
 
+
 @dataclass_json
 @dataclass
 class GameInformation:
@@ -48,6 +48,7 @@ class GameInformation:
     player1_score: int
     player2_lives: int
     player2_score: int
+    barrel_list: list[list[int, int]]
 
 
 @dataclass_json
@@ -55,6 +56,3 @@ class GameInformation:
 class GameState:
     player_states: Dict[str, PlayerState]
     game_state: GameInformation
-
-    # need a game state to keep track of gameover and/or round so proper resets happen
-    # in the game on the client side

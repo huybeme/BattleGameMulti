@@ -45,6 +45,12 @@ class Bullet(arcade.Sprite):
         self.player_num = player_num
 
 
+class Barrel(arcade.Sprite):
+    def __init__(self):
+        super().__init__()
+        self.texture = arcade.load_texture("./Assets/World/Objects/Barrel/SPR_Barrel_0.png")
+
+
 class GameWindow(arcade.Window):
     def __init__(self, player1: Player, player2: Player):
         super().__init__(game.SCREEN_WIDTH, game.SCREEN_HEIGHT, title="server window")
@@ -70,7 +76,7 @@ class GameWindow(arcade.Window):
         self.time = 0
         self.last_update = datetime.datetime.now()
 
-    def on_update(self, delta_time: float = 1/60):
+    def on_update(self, delta_time: float = 1 / 60):
         self.time = self.time + delta_time
         now = datetime.datetime.now()
         if self.last_update + datetime.timedelta(milliseconds=20) > now:
@@ -78,15 +84,17 @@ class GameWindow(arcade.Window):
 
         if self.player1.is_shooting or self.player2.is_shooting:
             bullet = Bullet(0)
-            cf = 10     # set to half the length to the tallest sprite
+            cf = 10  # set to half the length to the tallest sprite
             if self.player1.is_shooting:
                 bullet.change_x = self.player1.bullet_change_x
                 bullet.change_y = self.player1.bullet_change_y
-                bullet.set_position(player1.center_x + (cf * bullet.change_x), player1.center_y + (cf * bullet.change_y))
+                bullet.set_position(player1.center_x + (cf * bullet.change_x),
+                                    player1.center_y + (cf * bullet.change_y))
             else:
                 bullet.change_x = self.player2.bullet_change_x
                 bullet.change_y = self.player2.bullet_change_y
-                bullet.set_position(player2.center_x + (cf * bullet.change_x), player2.center_y + (cf * bullet.change_y))
+                bullet.set_position(player2.center_x + (cf * bullet.change_x),
+                                    player2.center_y + (cf * bullet.change_y))
             self.bullet_list.append(bullet)
 
         for bullet in self.bullet_list:
@@ -334,7 +342,6 @@ def update_game_state(game_info: PlayerState.GameInformation, gamestate: PlayerS
     print(game_info.level_num)
 
 
-
 def process_player_shooting(gamestate: PlayerState.GameState, client_address: str,
                             player_move: PlayerState.PlayerMovement, gameinfo: PlayerState.GameInformation):
     now = datetime.datetime.now()
@@ -389,7 +396,7 @@ def process_player_shooting(gamestate: PlayerState.GameState, client_address: st
             bullet = Bullet(1)
         elif player_info.id == 2:
             bullet = Bullet(2)
-        if player_info.weapon_shooting:     # values are between -1 and 1 * dist_to_next_point
+        if player_info.weapon_shooting:  # values are between -1 and 1 * dist_to_next_point
             bullet.change_x = math.cos(math.radians(player_info.weapon_angle)) * dist_to_next_point
             bullet.change_y = math.sin(math.radians(player_info.weapon_angle)) * dist_to_next_point
         else:
@@ -465,12 +472,27 @@ async def communication_with_client(server: GameWindow, event_loop, gamestate, s
         #         print("no bullets")
 
 
+def get_barrel_coords(lvl: int):
+    w = game.SCREEN_WIDTH
+    h = game.SCREEN_HEIGHT
+
+    if lvl == 1:
+        return [[285, 340], [w - 280, h - 340], [560, 660], [w-560, h-660], [-99, -99], [-99, -99]]
+    elif lvl == 2:
+        return [[400, 400], [w - 380, 400], [200, 300], [w - 200, h - 300], [w - 100, 100], [100, h - 100]]
+    else:
+        return [[384, 160], [w - 384, h - 160], [190, h - 120], [w - 190, 120], [-99, -99], [-99, -99]]
+
+
+
 def main():
     server_address = find_ip_address()
     print(f"Server address is {server_address} on port {SERVER_PORT}")
+
     gameInfo = PlayerState.GameInformation(level_switch=False, level_num=1, player1_lives=5, player1_score=0,
-                                           player2_lives=5, player2_score=0)
+                                           player2_lives=5, player2_score=0, barrel_list=get_barrel_coords(1))
     gameState = PlayerState.GameState(all_players, gameInfo)
+
 
     # create a socket and bind it to the address and port
     UDPServerSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
@@ -519,58 +541,12 @@ def main():
     UDPServerSocket.sendto(str.encode(message), addresses[1])
     print("addresses sent to client")
 
-
     window = GameWindow(player1, player2)
     server_thread = threading.Thread(target=setup_server_connection,
                                      args=(window, gameState, server_address, UDPServerSocket),
                                      daemon=True)
     server_thread.start()
     arcade.run()
-
-    # while (True):
-    #     # get key movements from client
-    #     data_packet = UDPServerSocket.recvfrom(1024)  # sets the packet size, next lines won't run until this receives
-    #     message = data_packet[0]  # data stored here within tuple
-    #     client_address = data_packet[1]  # client IP addr is stored here, nothing beyond [1]
-    #
-    #     json_data = json.loads(message)
-    #
-    #     player_move: PlayerState.PlayerMovement = PlayerState.PlayerMovement()
-    #     player_move.keys = json_data
-    #
-    #     process_player_shooting(gameState, client_address, player_move)
-    #     process_player_movement(player_move, client_address, gameState)
-    #     check_for_collision(gameState, client_address)
-    #
-    #     # send client playerstate positions
-    #     response = gameState.to_json()
-    #     UDPServerSocket.sendto(str.encode(response), client_address)
-    #
-    #     global game_count
-    #     game_count += 1
-    #     if game_count % 1000 == 0:
-    #         # print(gameInfo)
-    #         # print(gameState)
-    #         try:
-    #             print(bullet_list[len(bullet_list)-1].center_x, bullet_list[len(bullet_list)-1].center_y)
-    #             print(bullet_list[len(bullet_list)-1].change_x, bullet_list[len(bullet_list)-1].change_y)
-    #             print(len(bullet_list), game_count)
-    #         except:
-    #             print("no bullets")
-
-    # get game information from client (next level and level number)
-    # game_info_data = UDPServerSocket.recvfrom(1024)
-    # game_info_string = game_info_data[0]    # type bytes
-    # game_data = json.loads(game_info_string)    # type list
-    # print(game_info_string, type(game_info_string))
-    # if get_game_info(game_info_string.decode())[0] == "false":
-    #     gameInfo.level_switch = False
-    # elif get_game_info(game_info_string.decode())[0] == "true":
-    #     gameInfo.level_num += 1
-    #     gameInfo.level_switch = False
-    #     if gameInfo.level_num == 4:
-    #         gameInfo.level_num = 1
-    #     update_game_state(gameState.game_state, gameState)
 
 
 if __name__ == '__main__':

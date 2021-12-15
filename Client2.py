@@ -236,7 +236,6 @@ class Player(arcade.Sprite):
         elif self.face_angle == 0:  # right
             self.animation(self.sheet_0, update_per_frame)
 
-
     def animation(self, sheet, update):
         self.current_texture += 1
         if self.current_texture > 7 * update:
@@ -245,12 +244,33 @@ class Player(arcade.Sprite):
         self.texture = sheet[frame]
 
 
-class MoveableSprite(arcade.Sprite):
-    def __init__(self, image: str, scale: float, center_x: int, center_y: int):
-        super().__init__(image)
-        self.scale = scale
-        self.center_x = center_x
-        self.center_y = center_y
+class BarrelSprite(arcade.AnimatedTimeBasedSprite):
+    def __init__(self, xloc, yloc):
+        super().__init__()
+
+        self.center_x = xloc
+        self.center_y = yloc
+
+        barrel_sprite_path = "./Assets/World/Objects/Barrel/Barrel_Sprite_Sheet.png"
+        barrel_frames: List[arcade.AnimationKeyframe] = []
+
+        for row in range(2):
+            for column in range(4):
+                frame = arcade.AnimationKeyframe(
+                    (column + 1) * (row + 1),
+                    125,
+                    arcade.load_texture(
+                        str(barrel_sprite_path),
+                        x=column * 40,
+                        y=row * 50,
+                        width=40,
+                        height=50,
+                    ),
+                )
+                barrel_frames.append(frame)
+
+        #
+        self.frames = barrel_frames
 
 
 class PowerUpSprite(arcade.Sprite):
@@ -288,6 +308,9 @@ class TiledWindow(arcade.Window):
         self.round = 1
         self.game_frame = 0
         self.restart_tick = 5
+
+        self.current_round = 0
+        self.barrel_pos = None
 
         layer_options = {
             "Water": {"use_spatial_hash": True},
@@ -462,47 +485,47 @@ class TiledWindow(arcade.Window):
             center_y=120,
         )
 
-        # --- BARREL-----------------------------------------------------------------------------//
-        barrel_sprite_path = "./Assets/World/Objects/Barrel/Barrel_Sprite_Sheet.png"
-        barrel_frames: List[arcade.AnimationKeyframe] = []
-
-        for row in range(2):
-            for column in range(4):
-                frame = arcade.AnimationKeyframe(
-                    (column + 1) * (row + 1),
-                    125,
-                    arcade.load_texture(
-                        str(barrel_sprite_path),
-                        x=column * 40,
-                        y=row * 50,
-                        width=40,
-                        height=50,
-                    ),
-                )
-                barrel_frames.append(frame)
-
-        self.barrel_1.frames = barrel_frames
-        self.barrel_2.frames = barrel_frames
-        self.barrel_3.frames = barrel_frames
-        self.barrel_4.frames = barrel_frames
-
-        # INITIAL MAP 1 ADD
-        self.barrel_list.append(self.barrel_1)
-        self.barrel_list.append(self.barrel_2)
-        self.barrel_list.append(self.barrel_3)
-        self.barrel_list.append(self.barrel_4)
-
-        self.barrel_5.frames = barrel_frames
-        self.barrel_6.frames = barrel_frames
-        self.barrel_7.frames = barrel_frames
-        self.barrel_8.frames = barrel_frames
-        self.barrel_9.frames = barrel_frames
-        self.barrel_10.frames = barrel_frames
-
-        self.barrel_11.frames = barrel_frames
-        self.barrel_12.frames = barrel_frames
-        self.barrel_13.frames = barrel_frames
-        self.barrel_14.frames = barrel_frames
+        # # --- BARREL-----------------------------------------------------------------------------//
+        # barrel_sprite_path = "./Assets/World/Objects/Barrel/Barrel_Sprite_Sheet.png"
+        # barrel_frames: List[arcade.AnimationKeyframe] = []
+        #
+        # for row in range(2):
+        #     for column in range(4):
+        #         frame = arcade.AnimationKeyframe(
+        #             (column + 1) * (row + 1),
+        #             125,
+        #             arcade.load_texture(
+        #                 str(barrel_sprite_path),
+        #                 x=column * 40,
+        #                 y=row * 50,
+        #                 width=40,
+        #                 height=50,
+        #             ),
+        #         )
+        #         barrel_frames.append(frame)
+        #
+        # self.barrel_1.frames = barrel_frames
+        # self.barrel_2.frames = barrel_frames
+        # self.barrel_3.frames = barrel_frames
+        # self.barrel_4.frames = barrel_frames
+        #
+        # # INITIAL MAP 1 ADD
+        # self.barrel_list.append(self.barrel_1)
+        # self.barrel_list.append(self.barrel_2)
+        # self.barrel_list.append(self.barrel_3)
+        # self.barrel_list.append(self.barrel_4)
+        #
+        # self.barrel_5.frames = barrel_frames
+        # self.barrel_6.frames = barrel_frames
+        # self.barrel_7.frames = barrel_frames
+        # self.barrel_8.frames = barrel_frames
+        # self.barrel_9.frames = barrel_frames
+        # self.barrel_10.frames = barrel_frames
+        #
+        # self.barrel_11.frames = barrel_frames
+        # self.barrel_12.frames = barrel_frames
+        # self.barrel_13.frames = barrel_frames
+        # self.barrel_14.frames = barrel_frames
 
         # --- WHIRLPOOL -----------------------------------------------------------------------------//
         self.whirlpool_list = arcade.SpriteList()
@@ -638,8 +661,6 @@ class TiledWindow(arcade.Window):
         self.wait_between_powerups = 12
         self.p1_power_up_timer = 0
         self.p2_power_up_timer = 0
-
-
 
     # Initially sets up or restarts the game
     def setup(self):
@@ -1093,7 +1114,7 @@ class TiledWindow(arcade.Window):
         if player_2_collision:
             self.p2_total_movement_speed = 0.4
 
-         # SPECIAL POWER_UPS -----------------------------------------------------------------\\
+        # SPECIAL POWER_UPS -----------------------------------------------------------------\\
         for power_up in self.power_up_list:
 
             # Manual Animation
@@ -1322,7 +1343,6 @@ class TiledWindow(arcade.Window):
                 40,
             )
 
-
     def player_shooting(self, player):
         bullet = BulletSprite(
             "./Assets/Player/spike_ball/spike_ball.png", 5, 0.15, game_window=self
@@ -1452,6 +1472,7 @@ class TiledWindow(arcade.Window):
         self.post_whirlpool_list.append(self.post_whirlpool_sprite)
         whirlpool.remove_from_sprite_lists()
 
+
 def get_ip_addresses(data):
     ip_addresses = []
     count = 1
@@ -1466,6 +1487,7 @@ def get_ip_addresses(data):
         count += 1
     return ip_addresses
 
+
 def find_ip_address():
     server_address = ""
     connection = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -1478,12 +1500,16 @@ def find_ip_address():
         connection.close()
     return server_address
 
+
 def setup_client_connection(client: TiledWindow):
     client_event_loop = asyncio.new_event_loop()
     asyncio.set_event_loop(client_event_loop)
     client_event_loop.create_task(communication_with_server(client, client_event_loop))
     client_event_loop.run_forever()
 
+def get_initial_barrels(data: list, barrel_list):
+    for barrel in data:
+        barrel_list.append(BarrelSprite(barrel[0], barrel[1]))
 
 async def communication_with_server(client: TiledWindow, event_loop):  # client pulls from TiledWindow class
     UDPClientSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
@@ -1496,11 +1522,14 @@ async def communication_with_server(client: TiledWindow, event_loop):  # client 
     decoded_data: PlayerState.GameState = PlayerState.GameState.from_json(data)
     player_dict = decoded_data.player_states
 
+    get_initial_barrels(decoded_data.game_state.barrel_list, client.barrel_list)
+
     # get list of ip addresses from server
     data_packet, serveraddr = UDPClientSocket.recvfrom(1024)
     decoded_addresses = data_packet.decode()
     ip_addresses = get_ip_addresses(decoded_addresses)
     print("ready to play")
+
 
     # sort out who is who
     player2_ip_addr = None
@@ -1520,11 +1549,11 @@ async def communication_with_server(client: TiledWindow, event_loop):  # client 
 
         # get playerstate positions
         data_packet = UDPClientSocket.recvfrom(1024)
-        data = data_packet[0]   # get the encoded string
+        data = data_packet[0]  # get the encoded string
         gamestate_data: PlayerState.GameState = PlayerState.GameState.from_json(data)
 
         # get playerstates and gameinformation data
-        player_dict = gamestate_data.player_states    # will contain all_players
+        player_dict = gamestate_data.player_states  # will contain all_players
         game_info: PlayerState.GameInformation = gamestate_data.game_state
 
         # update client player information based on playerstate data
@@ -1548,32 +1577,16 @@ async def communication_with_server(client: TiledWindow, event_loop):  # client 
         player2.lives = game_info.player2_lives
         player2.score = game_info.player2_score
 
+        # client.barrel_pos = gamestate_data.game_state.barrel_list
+
         client.round = game_info.level_num
-        if game_info.level_switch:
+        if game_info.level_num > client.current_round:
+            client.current_round = game_info.level_num
             print("switch")
             # client.game_reset()
 
-        # # update and send server game information
-        # if client.next_level:
-        #     game_info.level_switch = True
-        #     game_info.level_num += 1
-        #     print("someone died")
-        #     client.next_level = False
-        # if player.lives == 0:
-        #     game_info.player_died = 1
-        # elif player2.lives == 0:
-        #     game_info.player_died = 2
-        #
-        # game_info_list = [game_info.level_switch, game_info.level_num, game_info.player1_lives, game_info.player1_score,
-        #                   game_info.player_died]
-        # game_info_data = json.dumps(game_info_list)
-        # UDPClientSocket.sendto(str.encode(game_info_data), (client.server_address, int(client.server_port)))
-
-
-
 
 def main():
-
     SERVER_ADDR = "10.0.0.241"
     SERVER_PORT = "25001"
 
