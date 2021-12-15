@@ -49,6 +49,8 @@ class GameInformation:
     player2_lives: int
     player2_score: int
     barrel_list: list[list[int, int]]
+    restart_tick: int
+    last_update: datetime.datetime
 
 
 @dataclass_json

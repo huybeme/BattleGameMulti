@@ -321,14 +321,16 @@ def update_game_state(game_info: PlayerState.GameInformation, gamestate: PlayerS
     global game_map
     global wall_list
     global map_scene
-
-    game_info.player1_lives = 5
-    game_info.player2_lives = 5
+    now = datetime.datetime.now()
 
     if gamestate.game_state.level_num >= 3:
+
         gamestate.game_state.level_num = 1
     else:
         gamestate.game_state.level_num += 1
+
+    game_info.player1_lives = 5
+    game_info.player2_lives = 5
     map_string = f"./Assets/Battle_Ships_Map_{game_info.level_num}.json"
     game_map = arcade.load_tilemap(map_string, layer_options=layer_options,
                                    scaling=game.SPRITE_SCALING_TILES)
@@ -341,7 +343,6 @@ def update_game_state(game_info: PlayerState.GameInformation, gamestate: PlayerS
         barrel_list.__getitem__(i).set_position(barrel_coords[i][0], barrel_coords[i][1])
         gamestate.game_state.barrel_list[i][0] = barrel_coords[i][0]
         gamestate.game_state.barrel_list[i][1] = barrel_coords[i][1]
-
 
     if gamestate.player_states[client_address[0]].id == 1:
         player1.set_position(80, 80)
@@ -441,19 +442,18 @@ def process_player_shooting(gamestate: PlayerState.GameState, client_address: st
                 print("player 1 shot")
                 gamestate.game_state.player1_lives -= 1
 
-            if gamestate.game_state.player1_lives == 0 or gamestate.game_state.player2_lives == 0:
-                if gamestate.game_state.player1_lives == 0:
-                    gamestate.game_state.player2_score += 1
-                if gamestate.game_state.player2_lives == 0:
-                    gamestate.game_state.player1_score += 1
-                gameinfo.level_switch = True
-                update_game_state(gameinfo, gamestate, client_address)
+    if gamestate.game_state.player1_lives == 0 or gamestate.game_state.player2_lives == 0:
+        if gamestate.game_state.player1_lives == 0:
+            gamestate.game_state.player2_score += 1
+        if gamestate.game_state.player2_lives == 0:
+            gamestate.game_state.player1_score += 1
+        gameinfo.level_switch = True
+        update_game_state(gameinfo, gamestate, client_address)
 
     map_scene.add_sprite_list(name="bullets", sprite_list=bullet_list2)
 
 
 def process_barrel_collision(gamestate: PlayerState.GameState, client_address: str):
-
     player_info = gamestate.player_states[client_address[0]]
     barrel_speed = 0.5
     delta_x = 0
@@ -492,7 +492,6 @@ def process_barrel_collision(gamestate: PlayerState.GameState, client_address: s
             barrel_list.__getitem__(i).center_y += delta_y
 
 
-
 async def communication_with_client(server: GameWindow, event_loop, gamestate, server_address, UDPServerSocket):
     while (True):
         # get key movements from client
@@ -509,7 +508,6 @@ async def communication_with_client(server: GameWindow, event_loop, gamestate, s
         process_barrel_collision(gamestate, client_address)
         process_player_movement(player_move, client_address, gamestate)
         check_for_collision(gamestate, client_address)
-
 
         # send client playerstate positions
         response = gamestate.to_json()
@@ -532,7 +530,7 @@ def get_barrel_coords(lvl: int):
     w = game.SCREEN_WIDTH
     h = game.SCREEN_HEIGHT
 
-    set_1 = [[285, 340], [w - 280, h - 340], [560, 660], [w-560, h-660], [-99, -99], [-99, -99]]
+    set_1 = [[285, 340], [w - 280, h - 340], [560, 660], [w - 560, h - 660], [-99, -99], [-99, -99]]
     set_2 = [[400, 400], [w - 380, 400], [200, 300], [w - 200, h - 300], [w - 100, 100], [100, h - 100]]
     set_3 = [[384, 160], [w - 384, h - 160], [190, h - 120], [w - 190, 120], [-99, -99], [-99, -99]]
 
@@ -550,16 +548,13 @@ def get_barrel_coords(lvl: int):
         return set_3
 
 
-
 def main():
     server_address = find_ip_address()
     print(f"Server address is {server_address} on port {SERVER_PORT}")
 
     gameInfo = PlayerState.GameInformation(level_switch=False, level_num=1, player1_lives=5, player1_score=0,
-                                           player2_lives=5, player2_score=0, barrel_list=get_barrel_coords(1))
+                                           player2_lives=5, player2_score=0, barrel_list=get_barrel_coords(1), restart_tick=5, last_update=datetime.datetime.now())
     gameState = PlayerState.GameState(all_players, gameInfo)
-
-
 
     # create a socket and bind it to the address and port
     UDPServerSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)

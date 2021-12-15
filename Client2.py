@@ -561,85 +561,6 @@ class TiledWindow(arcade.Window):
         for post_whirlpool in self.post_whirlpool_list:
             post_whirlpool.remove_from_sprite_lists()
             self.post_whirlpool_list.update()
-        #
-        # if self.round == 1:
-        #
-        #     self.barrel_1.remove_from_sprite_lists()
-        #     self.barrel_2.remove_from_sprite_lists()
-        #     self.barrel_3.remove_from_sprite_lists()
-        #     self.barrel_4.remove_from_sprite_lists()
-        #
-        #     self.barrel_11.remove_from_sprite_lists()
-        #     self.barrel_12.remove_from_sprite_lists()
-        #     self.barrel_13.remove_from_sprite_lists()
-        #     self.barrel_14.remove_from_sprite_lists()
-        #
-        #     self.barrel_list.append(self.barrel_1)
-        #     self.barrel_list.append(self.barrel_2)
-        #     self.barrel_list.append(self.barrel_3)
-        #     self.barrel_list.append(self.barrel_4)
-        #
-        # elif self.round == 2:
-        #
-        #     self.barrel_1.remove_from_sprite_lists()
-        #     self.barrel_2.remove_from_sprite_lists()
-        #     self.barrel_3.remove_from_sprite_lists()
-        #     self.barrel_4.remove_from_sprite_lists()
-        #
-        #     self.barrel_list.append(self.barrel_5)
-        #     self.barrel_list.append(self.barrel_6)
-        #     self.barrel_list.append(self.barrel_7)
-        #     self.barrel_list.append(self.barrel_8)
-        #     self.barrel_list.append(self.barrel_9)
-        #     self.barrel_list.append(self.barrel_10)
-        #
-        #     self.pre_whirlpool_list.append(self.whirlpool_1)
-        #     self.pre_whirlpool_list.append(self.whirlpool_2)
-        #
-        #     self.map_scene = arcade.Scene.from_tilemap(self.tile_map2)
-        #     self.wall_list = self.tile_map2.sprite_lists["Solids"]
-        #     self.beach_tile_list = self.tile_map2.sprite_lists["Beach"]
-        #     self.water_tile_list = self.tile_map2.sprite_lists["Water"]
-        #
-        # elif self.round == 3:
-        #
-        #     self.whirlpool_1.remove_from_sprite_lists()
-        #     self.whirlpool_2.remove_from_sprite_lists()
-        #     self.whirlpool_3.remove_from_sprite_lists()
-        #
-        #     for pre_whirlpool in self.pre_whirlpool_list:
-        #         pre_whirlpool.remove_from_sprite_lists()
-        #
-        #     for whirlpool in self.whirlpool_list:
-        #         whirlpool.remove_from_sprite_lists()
-        #
-        #     for post_whirlpool in self.post_whirlpool_list:
-        #         post_whirlpool.remove_from_sprite_lists()
-        #
-        #     self.pre_whirlpool_list.append(self.whirlpool_4)
-        #     self.pre_whirlpool_list.append(self.whirlpool_5)
-        #     self.pre_whirlpool_list.append(self.whirlpool_6)
-        #     self.pre_whirlpool_list.append(self.whirlpool_7)
-        #     self.pre_whirlpool_list.append(self.whirlpool_8)
-        #
-        #     # self.whirlpool_3.remove_from_sprite_lists()
-        #
-        #     self.barrel_5.remove_from_sprite_lists()
-        #     self.barrel_6.remove_from_sprite_lists()
-        #     self.barrel_7.remove_from_sprite_lists()
-        #     self.barrel_8.remove_from_sprite_lists()
-        #     self.barrel_9.remove_from_sprite_lists()
-        #     self.barrel_10.remove_from_sprite_lists()
-        #
-        #     self.barrel_list.append(self.barrel_11)
-        #     self.barrel_list.append(self.barrel_12)
-        #     self.barrel_list.append(self.barrel_13)
-        #     self.barrel_list.append(self.barrel_14)
-        #
-        #     self.map_scene = arcade.Scene.from_tilemap(self.tile_map3)
-        #     self.wall_list = self.tile_map3.sprite_lists["Solids"]
-        #     self.beach_tile_list = self.tile_map3.sprite_lists["Beach"]
-        #     self.water_tile_list = self.tile_map3.sprite_lists["Water"]
 
         self.gameover = True
 
@@ -1392,6 +1313,7 @@ async def communication_with_server(client: TiledWindow, event_loop):  # client 
         player2.score = game_info.player2_score
 
         client.barrel_pos = gamestate_data.game_state.barrel_list
+        client.restart_tick = gamestate_data.game_state.restart_tick
 
         client.round = game_info.level_num
         if game_info.level_num > client.current_round:
