@@ -46,11 +46,12 @@ class Bullet(arcade.Sprite):
 
 
 class Barrel(arcade.Sprite):
-    def __init__(self):
+    def __init__(self, xloc, yloc):
         super().__init__()
-        self.texture = arcade.load_texture(
-            "./Assets/World/Objects/Barrel/SPR_Barrel_0.png"
-        )
+        self.center_x = xloc
+        self.center_y = yloc
+        self.texture = arcade.load_texture("./Assets/World/Objects/Barrel/SPR_Barrel_0.png")
+
 
 
 class GameWindow(arcade.Window):
@@ -140,6 +141,8 @@ player_list = arcade.SpriteList()
 player_list.append(player1)
 player_list.append(player2)
 bullet_list = arcade.SpriteList()
+bullet_list2 = arcade.SpriteList()
+barrel_list = arcade.SpriteList()
 layer_options = {
     "Water": {"use_spatial_hash": True},
     "Beach": {"use_spatial_hash": True},
@@ -336,29 +339,33 @@ def check_for_collision(gamestate: PlayerState.GameState, client_address: str):
         player2.set_position(player_info.x_loc, player_info.y_loc)
 
 
-def update_game_state(
-    game_info: PlayerState.GameInformation,
-    gamestate: PlayerState.GameState,
-    client_address: str,
-):
+def update_game_state(game_info: PlayerState.GameInformation, gamestate: PlayerState.GameState, client_address: str):
     global map_string
     global game_map
     global wall_list
     global map_scene
-
-    game_info.player1_lives = 5
-    game_info.player2_lives = 5
+    now = datetime.datetime.now()
 
     if gamestate.game_state.level_num >= 3:
+
         gamestate.game_state.level_num = 1
     else:
         gamestate.game_state.level_num += 1
+
+    game_info.player1_lives = 5
+    game_info.player2_lives = 5
     map_string = f"./Assets/Battle_Ships_Map_{game_info.level_num}.json"
-    game_map = arcade.load_tilemap(
-        map_string, layer_options=layer_options, scaling=game.SPRITE_SCALING_TILES
-    )
+    game_map = arcade.load_tilemap(map_string, layer_options=layer_options,
+                                   scaling=game.SPRITE_SCALING_TILES)
     wall_list = game_map.sprite_lists["Solids"]
     map_scene = arcade.Scene.from_tilemap(game_map)
+
+    barrel_coords = get_barrel_coords(gamestate.game_state.level_num)
+
+    for i in range(6):
+        barrel_list.__getitem__(i).set_position(barrel_coords[i][0], barrel_coords[i][1])
+        gamestate.game_state.barrel_list[i][0] = barrel_coords[i][0]
+        gamestate.game_state.barrel_list[i][1] = barrel_coords[i][1]
 
     if gamestate.player_states[client_address[0]].id == 1:
         player1.set_position(80, 80)
@@ -425,32 +432,19 @@ def process_player_shooting(
     global bullet_list
     global map_scene
     if player_info.shooting:
-        bullet = None
+        bullet = Bullet(0)
         if player_info.id == 1:
             bullet = Bullet(1)
         elif player_info.id == 2:
             bullet = Bullet(2)
-        if (
-            player_info.weapon_shooting
-        ):  # values are between -1 and 1 * dist_to_next_point
-            bullet.change_x = (
-                math.cos(math.radians(player_info.weapon_angle)) * dist_to_next_point
-            )
-            bullet.change_y = (
-                math.sin(math.radians(player_info.weapon_angle)) * dist_to_next_point
-            )
+        if player_info.weapon_shooting:  # values are between -1 and 1 * dist_to_next_point
+            bullet.change_x = math.cos(math.radians(player_info.weapon_angle)) * dist_to_next_point
+            bullet.change_y = math.sin(math.radians(player_info.weapon_angle)) * dist_to_next_point
         else:
-            bullet.change_x = (
-                math.cos(math.radians(player_info.face_angle)) * dist_to_next_point
-            )
-            bullet.change_y = (
-                math.sin(math.radians(player_info.face_angle)) * dist_to_next_point
-            )
-        bullet.set_position(
-            player_info.x_loc + (cf * bullet.change_x),
-            player_info.y_loc + (cf * bullet.change_y),
-        )
-        bullet_list.append(bullet)
+            bullet.change_x = math.cos(math.radians(player_info.face_angle)) * dist_to_next_point
+            bullet.change_y = math.sin(math.radians(player_info.face_angle)) * dist_to_next_point
+        bullet.set_position(player_info.x_loc + (cf * bullet.change_x), player_info.y_loc + (cf * bullet.change_y))
+        bullet_list2.append(bullet)
 
         if player_info.id == 1:
             player1.bullet_change_x = bullet.change_x
@@ -460,7 +454,7 @@ def process_player_shooting(
             player2.bullet_change_y = bullet.change_y
 
     gameinfo.level_switch = False
-    for bullet in bullet_list:
+    for bullet in bullet_list2:
         bullet.center_x += bullet.change_x
         bullet.center_y += bullet.change_y
         if bullet.collides_with_list(wall_list):
@@ -475,19 +469,55 @@ def process_player_shooting(
                 print("player 1 shot")
                 gamestate.game_state.player1_lives -= 1
 
-            if (
-                gamestate.game_state.player1_lives == 0
-                or gamestate.game_state.player2_lives == 0
-            ):
-                if gamestate.game_state.player1_lives == 0:
-                    gamestate.game_state.player2_score += 1
-                if gamestate.game_state.player2_lives == 0:
-                    gamestate.game_state.player1_score += 1
-                gameinfo.level_switch = True
-                update_game_state(gameinfo, gamestate, client_address)
+    if gamestate.game_state.player1_lives == 0 or gamestate.game_state.player2_lives == 0:
+        if gamestate.game_state.player1_lives == 0:
+            gamestate.game_state.player2_score += 1
+        if gamestate.game_state.player2_lives == 0:
+            gamestate.game_state.player1_score += 1
+        gameinfo.level_switch = True
+        update_game_state(gameinfo, gamestate, client_address)
 
-    map_scene.add_sprite_list(name="bullets", sprite_list=bullet_list)
+    map_scene.add_sprite_list(name="bullets", sprite_list=bullet_list2)
 
+
+
+def process_barrel_collision(gamestate: PlayerState.GameState, client_address: str):
+    player_info = gamestate.player_states[client_address[0]]
+    barrel_speed = 0.5
+    delta_x = 0
+    delta_y = 0
+    if player_info.face_angle == 0:
+        delta_x = barrel_speed
+    elif player_info.face_angle == 45:
+        delta_x = barrel_speed
+        delta_y = barrel_speed
+    elif player_info.face_angle == 90:
+        delta_y = barrel_speed
+    elif player_info.face_angle == 135:
+        delta_x = -barrel_speed
+        delta_y = barrel_speed
+    elif player_info.face_angle == 180:
+        delta_x = -barrel_speed
+    elif player_info.face_angle == 225:
+        delta_x = -barrel_speed
+        delta_y = -barrel_speed
+    elif player_info.face_angle == 270:
+        delta_y = -barrel_speed
+    elif player_info.face_angle == 315:
+        delta_x = barrel_speed
+        delta_y = -barrel_speed
+
+    for i in range(6):
+        if player1.collides_with_sprite(barrel_list.__getitem__(i)):
+            gamestate.game_state.barrel_list[i][0] += delta_x
+            gamestate.game_state.barrel_list[i][1] += delta_y
+            barrel_list.__getitem__(i).center_x += delta_x
+            barrel_list.__getitem__(i).center_y += delta_y
+        if player2.collides_with_sprite(barrel_list.__getitem__(i)):
+            gamestate.game_state.barrel_list[i][0] += delta_x
+            gamestate.game_state.barrel_list[i][1] += delta_y
+            barrel_list.__getitem__(i).center_x += delta_x
+            barrel_list.__getitem__(i).center_y += delta_y
 
 async def communication_with_client(
     server: GameWindow, event_loop, gamestate, server_address, UDPServerSocket
@@ -507,9 +537,8 @@ async def communication_with_client(
         player_move: PlayerState.PlayerMovement = PlayerState.PlayerMovement()
         player_move.keys = json_data
 
-        process_player_shooting(
-            gamestate, client_address, player_move, gamestate.game_state
-        )
+        process_player_shooting(gamestate, client_address, player_move, gamestate.game_state)
+        process_barrel_collision(gamestate, client_address)
         process_player_movement(player_move, client_address, gamestate)
         check_for_collision(gamestate, client_address)
 
@@ -517,50 +546,27 @@ async def communication_with_client(
         response = gamestate.to_json()
         UDPServerSocket.sendto(str.encode(response), client_address)
 
-        global game_count
-        game_count += 1
-        # if game_count % 1000 == 0:
-        #     # print(gameInfo)
-        #     print(gamestate)
-        #     try:
-        #         print(bullet_list[len(bullet_list) - 1].center_x, bullet_list[len(bullet_list) - 1].center_y)
-        #         print(bullet_list[len(bullet_list) - 1].change_x, bullet_list[len(bullet_list) - 1].change_y)
-        #         print(len(bullet_list), game_count)
-        #     except:
-        #         print("no bullets")
-
 
 def get_barrel_coords(lvl: int):
     w = game.SCREEN_WIDTH
     h = game.SCREEN_HEIGHT
 
+    set_1 = [[285, 340], [w - 280, h - 340], [560, 660], [w - 560, h - 660], [-99, -99], [-99, -99]]
+    set_2 = [[400, 400], [w - 380, 400], [200, 300], [w - 200, h - 300], [w - 100, 100], [100, h - 100]]
+    set_3 = [[384, 160], [w - 384, h - 160], [190, h - 120], [w - 190, 120], [-99, -99], [-99, -99]]
+
+    global barrel_list
+    global map_scene
+    for i in range(6):
+        barrel_list.append(Barrel(set_1[i][0], set_1[i][1]))
+    map_scene.add_sprite_list("barrels", sprite_list=barrel_list)
+
     if lvl == 1:
-        return [
-            [285, 340],
-            [w - 280, h - 340],
-            [560, 660],
-            [w - 560, h - 660],
-            [-99, -99],
-            [-99, -99],
-        ]
+        return set_1
     elif lvl == 2:
-        return [
-            [400, 400],
-            [w - 380, 400],
-            [200, 300],
-            [w - 200, h - 300],
-            [w - 100, 100],
-            [100, h - 100],
-        ]
+        return set_2
     else:
-        return [
-            [384, 160],
-            [w - 384, h - 160],
-            [190, h - 120],
-            [w - 190, 120],
-            [-99, -99],
-            [-99, -99],
-        ]
+        return set_3
 
 
 def main():
@@ -645,6 +651,7 @@ def main():
     print("addresses sent to client")
 
     window = GameWindow(player1, player2)
+    window.set_visible(False)
     server_thread = threading.Thread(
         target=setup_server_connection,
         args=(window, gameState, server_address, UDPServerSocket),

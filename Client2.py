@@ -316,7 +316,7 @@ class TiledWindow(arcade.Window):
         self.restart_tick = 5
 
         self.current_round = 0
-        self.barrel_pos = None
+        self.barrel_pos = [[0, 0]]
 
         layer_options = {
             "Water": {"use_spatial_hash": True},
@@ -858,6 +858,14 @@ class TiledWindow(arcade.Window):
     def on_update(self, delta_time):
         self.game_frame += 1
         self.check_game()
+
+        # update barrel position
+        count = 0
+        for barrel in self.barrel_list:
+            if len(self.barrel_pos) == 6:
+                barrel.center_x = self.barrel_pos[count][0]
+                barrel.center_y = self.barrel_pos[count][1]
+            count += 1
 
         self.physics_engine_wall_p1.update()
         self.physics_engine_wall_p2.update()
