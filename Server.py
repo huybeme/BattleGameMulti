@@ -137,6 +137,7 @@ player_list = arcade.SpriteList()
 player_list.append(player1)
 player_list.append(player2)
 bullet_list = arcade.SpriteList()
+bullet_list2 = arcade.SpriteList()
 barrel_list = arcade.SpriteList()
 layer_options = {
     "Water": {"use_spatial_hash": True},
@@ -335,12 +336,15 @@ def update_game_state(game_info: PlayerState.GameInformation, gamestate: PlayerS
     map_scene = arcade.Scene.from_tilemap(game_map)
 
     barrel_coords = get_barrel_coords(gamestate.game_state.level_num)
+    print(barrel_coords)
     count = 0
     for barrels in barrel_list:
         barrels.set_position(barrel_coords[count][0], barrel_coords[count][1])
         gamestate.game_state.barrel_list[count][0] = barrel_coords[count][0]
         gamestate.game_state.barrel_list[count][1] = barrel_coords[count][1]
         count += 1
+        if count > 5:
+            count = 0
 
     if gamestate.player_states[client_address[0]].id == 1:
         player1.set_position(80, 80)
@@ -415,7 +419,7 @@ def process_player_shooting(gamestate: PlayerState.GameState, client_address: st
             bullet.change_x = math.cos(math.radians(player_info.face_angle)) * dist_to_next_point
             bullet.change_y = math.sin(math.radians(player_info.face_angle)) * dist_to_next_point
         bullet.set_position(player_info.x_loc + (cf * bullet.change_x), player_info.y_loc + (cf * bullet.change_y))
-        bullet_list.append(bullet)
+        bullet_list2.append(bullet)
 
         if player_info.id == 1:
             player1.bullet_change_x = bullet.change_x
@@ -425,7 +429,7 @@ def process_player_shooting(gamestate: PlayerState.GameState, client_address: st
             player2.bullet_change_y = bullet.change_y
 
     gameinfo.level_switch = False
-    for bullet in bullet_list:
+    for bullet in bullet_list2:
         bullet.center_x += bullet.change_x
         bullet.center_y += bullet.change_y
         if bullet.collides_with_list(wall_list):
@@ -448,7 +452,7 @@ def process_player_shooting(gamestate: PlayerState.GameState, client_address: st
                 gameinfo.level_switch = True
                 update_game_state(gameinfo, gamestate, client_address)
 
-    map_scene.add_sprite_list(name="bullets", sprite_list=bullet_list)
+    map_scene.add_sprite_list(name="bullets", sprite_list=bullet_list2)
 
 
 def process_barrel_collision(gamestate: PlayerState.GameState, client_address: str):
@@ -490,7 +494,10 @@ def process_barrel_collision(gamestate: PlayerState.GameState, client_address: s
             gamestate.game_state.barrel_list[count][1] += delta_y
             barrel.center_x += delta_x
             barrel.center_y += delta_y
-        count += 1
+        if count > 6:
+            count = 0
+
+
 
 async def communication_with_client(server: GameWindow, event_loop, gamestate, server_address, UDPServerSocket):
     while (True):
