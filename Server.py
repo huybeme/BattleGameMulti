@@ -134,7 +134,7 @@ layer_options = {
     "Solids": {"use_spatial_hash": True},
     "Upper_Decorative": {"use_spatial_hash": True},
 }
-map_string = "Assets/Battle_Ships_Map_1.json"
+map_string = "./Assets/Battle_Ships_Map_1.json"
 game_map = arcade.load_tilemap(map_string, layer_options=layer_options,
                                scaling=game.SPRITE_SCALING_TILES)
 wall_list = game_map.sprite_lists["Solids"]
@@ -254,7 +254,7 @@ def process_player_movement(player_move: PlayerState.PlayerMovement, client_addr
 
 
 def check_for_collision(gamestate: PlayerState.GameState, client_address: str):
-    cf = 3.25
+    cf = 3
     player_info = gamestate.player_states[client_address[0]]
     if player1.collides_with_list(wall_list):
         if player_info.face_angle == 135:
@@ -308,11 +308,15 @@ def update_game_state(game_info: PlayerState.GameInformation, gamestate: PlayerS
     global game_map
     global wall_list
     global map_scene
+
+    game_info.player1_lives = 5
+    game_info.player2_lives = 5
+
     if gamestate.game_state.level_num >= 3:
         gamestate.game_state.level_num = 1
     else:
         gamestate.game_state.level_num += 1
-    map_string = f"Assets/Battle_Ships_Map_{game_info.level_num}.json"
+    map_string = f"./Assets/Battle_Ships_Map_{game_info.level_num}.json"
     game_map = arcade.load_tilemap(map_string, layer_options=layer_options,
                                    scaling=game.SPRITE_SCALING_TILES)
     wall_list = game_map.sprite_lists["Solids"]
@@ -327,6 +331,8 @@ def update_game_state(game_info: PlayerState.GameInformation, gamestate: PlayerS
         gamestate.player_states[client_address[0]].x_loc = game.SCREEN_WIDTH - 80
         gamestate.player_states[client_address[0]].y_loc = game.SCREEN_HEIGHT - 80
     print("moving onto next round")
+    print(game_info.level_num)
+
 
 
 def process_player_shooting(gamestate: PlayerState.GameState, client_address: str,
@@ -420,11 +426,8 @@ def process_player_shooting(gamestate: PlayerState.GameState, client_address: st
                     gamestate.game_state.player2_score += 1
                 if gamestate.game_state.player2_lives == 0:
                     gamestate.game_state.player1_score += 1
-                    gameinfo.level_switch = True
+                gameinfo.level_switch = True
                 update_game_state(gameinfo, gamestate, client_address)
-
-
-
 
     map_scene.add_sprite_list(name="bullets", sprite_list=bullet_list)
 
@@ -514,11 +517,8 @@ def main():
     message = json.dumps(addresses)
     UDPServerSocket.sendto(str.encode(message), addresses[0])
     UDPServerSocket.sendto(str.encode(message), addresses[1])
-    print(player1.position)
-    print(player2.position)
     print("addresses sent to client")
-    print(player1.position)
-    print(player2.position)
+
 
     window = GameWindow(player1, player2)
     server_thread = threading.Thread(target=setup_server_connection,

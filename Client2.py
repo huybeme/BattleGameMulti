@@ -666,7 +666,7 @@ class TiledWindow(arcade.Window):
             self.player_2.num_bullets = 3
             self.clear_flag = True
 
-        self.round += 1
+        # self.round += 1
         arcade.sound.play_sound(arcade.Sound("./Assets/SFX/Lip_Pop.wav"), 8)
 
         for post_whirlpool in self.post_whirlpool_list:
@@ -706,7 +706,6 @@ class TiledWindow(arcade.Window):
 
             self.pre_whirlpool_list.append(self.whirlpool_1)
             self.pre_whirlpool_list.append(self.whirlpool_2)
-            # self.pre_whirlpool_list.append(self.whirlpool_6)
 
             self.map_scene = arcade.Scene.from_tilemap(self.tile_map2)
             self.wall_list = self.tile_map2.sprite_lists["Solids"]
@@ -1235,6 +1234,12 @@ class TiledWindow(arcade.Window):
     # ---- DRAWING / RENDERING SCENE ---------------------------------------------------------------V
     def on_draw(self):
         arcade.start_render()
+        if self.round == 1:
+            self.map_scene = arcade.Scene.from_tilemap(self.tile_map1)
+        elif self.round == 2:
+            self.map_scene = arcade.Scene.from_tilemap(self.tile_map2)
+        else:
+            self.map_scene = arcade.Scene.from_tilemap(self.tile_map3)
         self.map_scene.draw()
         # draw things after map scene
 
@@ -1544,8 +1549,9 @@ async def communication_with_server(client: TiledWindow, event_loop):  # client 
         player2.score = game_info.player2_score
 
         client.round = game_info.level_num
-        print(client.round)
-
+        if game_info.level_switch:
+            print("switch")
+            # client.game_reset()
 
         # # update and send server game information
         # if client.next_level:
