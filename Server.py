@@ -504,10 +504,11 @@ async def communication_with_client(server: GameWindow, event_loop, gamestate, s
         player_move: PlayerState.PlayerMovement = PlayerState.PlayerMovement()
         player_move.keys = json_data
 
+        process_barrel_collision(gamestate, client_address)
         process_player_shooting(gamestate, client_address, player_move, gamestate.game_state)
         process_player_movement(player_move, client_address, gamestate)
         check_for_collision(gamestate, client_address)
-        process_barrel_collision(gamestate, client_address)
+
 
         # send client playerstate positions
         response = gamestate.to_json()
