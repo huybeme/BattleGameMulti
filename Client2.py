@@ -1543,6 +1543,10 @@ async def communication_with_server(client: TiledWindow, event_loop):  # client 
         player2.lives = game_info.player2_lives
         player2.score = game_info.player2_score
 
+        client.round = game_info.level_num
+        print(client.round)
+
+
         # # update and send server game information
         # if client.next_level:
         #     game_info.level_switch = True

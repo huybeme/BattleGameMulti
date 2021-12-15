@@ -34,13 +34,15 @@ class Player(arcade.Sprite):
         self.bullet_change_x = None
         self.bullet_change_y = None
         self.num_bullets = 3
+        self.lives = 5
 
 
 class Bullet(arcade.Sprite):
-    def __init__(self):
+    def __init__(self, player_num: int):
         super().__init__()
         self.texture = arcade.load_texture("./Assets/Player/spike_ball/spike_ball.png")
         self.scale = 0.15
+        self.player_num = player_num
 
 
 class GameWindow(arcade.Window):
@@ -65,17 +67,26 @@ class GameWindow(arcade.Window):
 
         self.bullet_list = arcade.SpriteList()
 
-    def on_update(self, delta_time: float):
+        self.time = 0
+        self.last_update = datetime.datetime.now()
+
+    def on_update(self, delta_time: float = 1/60):
+        self.time = self.time + delta_time
+        now = datetime.datetime.now()
+        if self.last_update + datetime.timedelta(milliseconds=20) > now:
+            return
+
         if self.player1.is_shooting or self.player2.is_shooting:
-            bullet = Bullet()
+            bullet = Bullet(0)
+            cf = 10     # set to half the length to the tallest sprite
             if self.player1.is_shooting:
                 bullet.change_x = self.player1.bullet_change_x
                 bullet.change_y = self.player1.bullet_change_y
-                bullet.set_position(player1.center_x + (7 * bullet.change_x), player1.center_y + (7 * bullet.change_y))
+                bullet.set_position(player1.center_x + (cf * bullet.change_x), player1.center_y + (cf * bullet.change_y))
             else:
                 bullet.change_x = self.player2.bullet_change_x
                 bullet.change_y = self.player2.bullet_change_y
-                bullet.set_position(player2.center_x + (7 * bullet.change_x), player2.center_y + (7 * bullet.change_y))
+                bullet.set_position(player2.center_x + (cf * bullet.change_x), player2.center_y + (cf * bullet.change_y))
             self.bullet_list.append(bullet)
 
         for bullet in self.bullet_list:
@@ -92,6 +103,7 @@ class GameWindow(arcade.Window):
 
     def on_draw(self):
         arcade.start_render()
+        self.last_update = datetime.datetime.now()
         self.map_scene.draw()
         self.player_list.draw()
         self.bullet_list.draw()
@@ -241,21 +253,8 @@ def process_player_movement(player_move: PlayerState.PlayerMovement, client_addr
     player_info.weapon_angle += delta_weapon
 
 
-def update_game_state(game_info: PlayerState.GameInformation, gamestate: PlayerState.GameState):
-    global map_string
-    global game_map
-    global wall_list
-    global map_scene
-    map_string = f"Assets/Battle_Ships_Map_{game_info.level_num}.json"
-    game_map = arcade.load_tilemap(map_string, layer_options=layer_options,
-                                   scaling=game.SPRITE_SCALING_TILES)
-    wall_list = game_map.sprite_lists["Solids"]
-    map_scene = arcade.Scene.from_tilemap(game_map)
-    print("moving onto next round")
-
-
 def check_for_collision(gamestate: PlayerState.GameState, client_address: str):
-    cf = 3.5
+    cf = 3.25
     player_info = gamestate.player_states[client_address[0]]
     if player1.collides_with_list(wall_list):
         if player_info.face_angle == 135:
@@ -304,14 +303,40 @@ def check_for_collision(gamestate: PlayerState.GameState, client_address: str):
         player2.set_position(player_info.x_loc, player_info.y_loc)
 
 
+def update_game_state(game_info: PlayerState.GameInformation, gamestate: PlayerState.GameState, client_address: str):
+    global map_string
+    global game_map
+    global wall_list
+    global map_scene
+    if gamestate.game_state.level_num >= 3:
+        gamestate.game_state.level_num = 1
+    else:
+        gamestate.game_state.level_num += 1
+    map_string = f"Assets/Battle_Ships_Map_{game_info.level_num}.json"
+    game_map = arcade.load_tilemap(map_string, layer_options=layer_options,
+                                   scaling=game.SPRITE_SCALING_TILES)
+    wall_list = game_map.sprite_lists["Solids"]
+    map_scene = arcade.Scene.from_tilemap(game_map)
+
+    if gamestate.player_states[client_address[0]].id == 1:
+        player1.set_position(80, 80)
+        gamestate.player_states[client_address[0]].x_loc = 80
+        gamestate.player_states[client_address[0]].y_loc = 80
+    if gamestate.player_states[client_address[0]].id == 2:
+        player2.set_position(game.SCREEN_WIDTH - 80, game.SCREEN_HEIGHT - 80)
+        gamestate.player_states[client_address[0]].x_loc = game.SCREEN_WIDTH - 80
+        gamestate.player_states[client_address[0]].y_loc = game.SCREEN_HEIGHT - 80
+    print("moving onto next round")
+
+
 def process_player_shooting(gamestate: PlayerState.GameState, client_address: str,
-                            player_move: PlayerState.PlayerMovement):
+                            player_move: PlayerState.PlayerMovement, gameinfo: PlayerState.GameInformation):
     now = datetime.datetime.now()
     player_info = gamestate.player_states[client_address[0]]
 
     if player_info.last_update + datetime.timedelta(milliseconds=20) > now:
         return
-    shoot_delay = player_info.bullet_delay + datetime.timedelta(seconds=0.3) < now
+    shoot_delay = player_info.bullet_delay + datetime.timedelta(seconds=0.5) < now
     player_info.weapon_shooting = False
     player_info.shooting = False
     if player_info.id == 1:
@@ -353,23 +378,28 @@ def process_player_shooting(gamestate: PlayerState.GameState, client_address: st
     global bullet_list
     global map_scene
     if player_info.shooting:
-        bullet = Bullet()
-        if player_info.weapon_shooting:
+        bullet = None
+        if player_info.id == 1:
+            bullet = Bullet(1)
+        elif player_info.id == 2:
+            bullet = Bullet(2)
+        if player_info.weapon_shooting:     # values are between -1 and 1 * dist_to_next_point
             bullet.change_x = math.cos(math.radians(player_info.weapon_angle)) * dist_to_next_point
             bullet.change_y = math.sin(math.radians(player_info.weapon_angle)) * dist_to_next_point
         else:
             bullet.change_x = math.cos(math.radians(player_info.face_angle)) * dist_to_next_point
             bullet.change_y = math.sin(math.radians(player_info.face_angle)) * dist_to_next_point
-        bullet.set_position(player_info.x_loc + (cf * bullet.change_x), player_info.y_loc + (cf * bullet.center_y))
+        bullet.set_position(player_info.x_loc + (cf * bullet.change_x), player_info.y_loc + (cf * bullet.change_y))
         bullet_list.append(bullet)
 
         if player_info.id == 1:
             player1.bullet_change_x = bullet.change_x
             player1.bullet_change_y = bullet.change_y
-        if player_info.id == 2:
+        elif player_info.id == 2:
             player2.bullet_change_x = bullet.change_x
             player2.bullet_change_y = bullet.change_y
 
+    gameinfo.level_switch = False
     for bullet in bullet_list:
         bullet.center_x += bullet.change_x
         bullet.center_y += bullet.change_y
@@ -377,11 +407,24 @@ def process_player_shooting(gamestate: PlayerState.GameState, client_address: st
             print("hit map wall")
             bullet.remove_from_sprite_lists()
         if bullet.collides_with_list(player_list):
-            if player_info.id == 1:
-                print("player 2 shot")
-            if player_info.id == 2:
-                print("player 1 shot")
             bullet.remove_from_sprite_lists()
+            if bullet.player_num == 1:
+                print("player 2 shot")
+                gamestate.game_state.player2_lives -= 1
+            if bullet.player_num == 2:
+                print("player 1 shot")
+                gamestate.game_state.player1_lives -= 1
+
+            if gamestate.game_state.player1_lives == 0 or gamestate.game_state.player2_lives == 0:
+                if gamestate.game_state.player1_lives == 0:
+                    gamestate.game_state.player2_score += 1
+                if gamestate.game_state.player2_lives == 0:
+                    gamestate.game_state.player1_score += 1
+                    gameinfo.level_switch = True
+                update_game_state(gameinfo, gamestate, client_address)
+
+
+
 
     map_scene.add_sprite_list(name="bullets", sprite_list=bullet_list)
 
@@ -398,7 +441,7 @@ async def communication_with_client(server: GameWindow, event_loop, gamestate, s
         player_move: PlayerState.PlayerMovement = PlayerState.PlayerMovement()
         player_move.keys = json_data
 
-        process_player_shooting(gamestate, client_address, player_move)
+        process_player_shooting(gamestate, client_address, player_move, gamestate.game_state)
         process_player_movement(player_move, client_address, gamestate)
         check_for_collision(gamestate, client_address)
 
@@ -408,15 +451,15 @@ async def communication_with_client(server: GameWindow, event_loop, gamestate, s
 
         global game_count
         game_count += 1
-        if game_count % 1000 == 0:
-            # print(gameInfo)
-            print(gamestate)
-            try:
-                print(bullet_list[len(bullet_list) - 1].center_x, bullet_list[len(bullet_list) - 1].center_y)
-                print(bullet_list[len(bullet_list) - 1].change_x, bullet_list[len(bullet_list) - 1].change_y)
-                print(len(bullet_list), game_count)
-            except:
-                print("no bullets")
+        # if game_count % 1000 == 0:
+        #     # print(gameInfo)
+        #     print(gamestate)
+        #     try:
+        #         print(bullet_list[len(bullet_list) - 1].center_x, bullet_list[len(bullet_list) - 1].center_y)
+        #         print(bullet_list[len(bullet_list) - 1].change_x, bullet_list[len(bullet_list) - 1].change_y)
+        #         print(len(bullet_list), game_count)
+        #     except:
+        #         print("no bullets")
 
 
 def main():
