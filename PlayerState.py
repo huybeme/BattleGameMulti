@@ -28,14 +28,13 @@ class PlayerMovement:
         arcade.key.DOWN: False,
         arcade.key.LEFT: False,
         arcade.key.RIGHT: False,
-
         arcade.key.W: False,
         arcade.key.S: False,
         arcade.key.A: False,
         arcade.key.D: False,
         arcade.key.E: False,
         arcade.key.SPACE: False,
-        arcade.key.F: False
+        arcade.key.F: False,
     }
 
 

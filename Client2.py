@@ -68,14 +68,14 @@ class BulletSprite(arcade.Sprite):
 
 class SpriteSheet(arcade.Sprite):
     def __init__(
-            self,
-            folder: str,
-            fn: str,
-            x_px: int,
-            y_px: int,
-            col: int,
-            num_sprites: int,
-            num_files,
+        self,
+        folder: str,
+        fn: str,
+        x_px: int,
+        y_px: int,
+        col: int,
+        num_sprites: int,
+        num_files,
     ):
         super().__init__()
         self.folder = folder
@@ -90,7 +90,13 @@ class SpriteSheet(arcade.Sprite):
 # <><><>----- PLAYER CLASS  -------------------------------------------------------------------------<><><>
 class Player(arcade.Sprite):
     def __init__(
-            self, img_path: str, scale: float, lives: int, id: int, sheet: SpriteSheet, face: int
+        self,
+        img_path: str,
+        scale: float,
+        lives: int,
+        id: int,
+        sheet: SpriteSheet,
+        face: int,
     ):
         super().__init__(img_path)
         self.score = 0
@@ -275,13 +281,13 @@ class BarrelSprite(arcade.AnimatedTimeBasedSprite):
 
 class PowerUpSprite(arcade.Sprite):
     def __init__(
-            self,
-            image: str,
-            scale: float,
-            center_x: int,
-            center_y: int,
-            effect: str,
-            color: arcade.color,
+        self,
+        image: str,
+        scale: float,
+        center_x: int,
+        center_y: int,
+        effect: str,
+        color: arcade.color,
     ):
         super().__init__(image)
         self.scale = scale
@@ -354,7 +360,7 @@ class TiledWindow(arcade.Window):
             lives=5,
             id=1,
             sheet=player_1_ss,
-            face=90
+            face=90,
         )
         self.player_1.set_position(80, 80)
         self.physics_engine_wall_p1 = arcade.PhysicsEngineSimple(
@@ -366,8 +372,12 @@ class TiledWindow(arcade.Window):
 
         player_2_ss = SpriteSheet("lapras_sheet", "lapras_sheet", 95, 95, 4, 8, 3)
         self.player_2 = Player(
-            "./Assets/Player/lapras_start.png", 1, lives=5, id=2, sheet=player_2_ss,
-            face=270
+            "./Assets/Player/lapras_start.png",
+            1,
+            lives=5,
+            id=2,
+            sheet=player_2_ss,
+            face=270,
         )
         self.physics_engine_wall_p2 = arcade.PhysicsEngineSimple(
             self.player_2, self.wall_list
@@ -938,11 +948,7 @@ class TiledWindow(arcade.Window):
             hit_barrel = arcade.check_for_collision_with_list(bullet, self.barrel_list)
             hit_player = arcade.check_for_collision_with_list(bullet, self.player_list)
 
-            if (
-                    len(hit_wall) > 0
-                    or len(hit_barrel) > 0
-                    or len(hit_player) > 0
-            ):
+            if len(hit_wall) > 0 or len(hit_barrel) > 0 or len(hit_player) > 0:
                 explosion = arcade.Sprite("./Assets/World/Effects/SPR_Explosion_0.png")
                 explosion.center_x = bullet.center_x
                 explosion.center_y = bullet.center_y
@@ -1185,44 +1191,44 @@ class TiledWindow(arcade.Window):
             # UP
         if self.player_1.direction[0] == True:
             self.player_1.change_y = (
-                    self.p1_total_movement_speed + self.p1_movement_speed_extra
+                self.p1_total_movement_speed + self.p1_movement_speed_extra
             )
         # LEFT
         if self.player_1.direction[1] == True:
             self.player_1.change_x = (
-                    -self.p1_total_movement_speed - self.p1_movement_speed_extra
+                -self.p1_total_movement_speed - self.p1_movement_speed_extra
             )
         # DOWN
         if self.player_1.direction[2] == True:
             self.player_1.change_y = (
-                    -self.p1_total_movement_speed - self.p1_movement_speed_extra
+                -self.p1_total_movement_speed - self.p1_movement_speed_extra
             )
         # RIGHT
         if self.player_1.direction[3] == True:
             self.player_1.change_x = (
-                    self.p1_total_movement_speed + self.p1_movement_speed_extra
+                self.p1_total_movement_speed + self.p1_movement_speed_extra
             )
 
             # PLAYER 2 MOVEMENT
             # UP
         if self.player_2.direction[0] == True:
             self.player_2.change_y = (
-                    self.p2_total_movement_speed + self.p2_movement_speed_extra
+                self.p2_total_movement_speed + self.p2_movement_speed_extra
             )
         # LEFT
         if self.player_2.direction[1] == True:
             self.player_2.change_x = (
-                    -self.p2_total_movement_speed - self.p2_movement_speed_extra
+                -self.p2_total_movement_speed - self.p2_movement_speed_extra
             )
         # DOWN
         if self.player_2.direction[2] == True:
             self.player_2.change_y = (
-                    -self.p2_total_movement_speed - self.p2_movement_speed_extra
+                -self.p2_total_movement_speed - self.p2_movement_speed_extra
             )
         # RIGHT
         if self.player_2.direction[3] == True:
             self.player_2.change_x = (
-                    self.p2_total_movement_speed + self.p2_movement_speed_extra
+                self.p2_total_movement_speed + self.p2_movement_speed_extra
             )
 
         if self.clear_flag:
@@ -1352,17 +1358,17 @@ class TiledWindow(arcade.Window):
         cf = 7
         if player.is_cannon_shooting:
             bullet.change_x = (
-                    math.cos(math.radians(player.weapon.angle)) * dist_to_next_point
+                math.cos(math.radians(player.weapon.angle)) * dist_to_next_point
             )
             bullet.change_y = (
-                    math.sin(math.radians(player.weapon.angle)) * dist_to_next_point
+                math.sin(math.radians(player.weapon.angle)) * dist_to_next_point
             )
         else:
             bullet.change_x = (
-                    math.cos(math.radians(player.face_angle)) * dist_to_next_point
+                math.cos(math.radians(player.face_angle)) * dist_to_next_point
             )
             bullet.change_y = (
-                    math.sin(math.radians(player.face_angle)) * dist_to_next_point
+                math.sin(math.radians(player.face_angle)) * dist_to_next_point
             )
         # set position has a correction so bullets dont collide with self, may not be suitable if we use other sprite sheets than the current ship one
         bullet.set_position(
@@ -1379,12 +1385,12 @@ class TiledWindow(arcade.Window):
 
     # ----- Key DOWN Events -----------------------------
     def on_key_press(self, key, modifiers):
-        if (key in self.actions.keys):
+        if key in self.actions.keys:
             self.actions.keys[key] = True
 
     # ----- Key UP Events--------------------------------
     def on_key_release(self, key, modifiers):
-        if (key in self.actions.keys):
+        if key in self.actions.keys:
             self.actions.keys[key] = False
 
     def random_power_up(self):
@@ -1477,10 +1483,10 @@ def get_ip_addresses(data):
     ip_addresses = []
     count = 1
     while count < len(data) - 1:
-        if data[count] == '\"':
+        if data[count] == '"':
             count += 1
             ip = ""
-            while data[count] != "\"":
+            while data[count] != '"':
                 ip = ip + data[count]
                 count += 1
             ip_addresses.append(ip)
@@ -1492,10 +1498,12 @@ def find_ip_address():
     server_address = ""
     connection = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     try:
-        connection.connect(('10.255.255.255', 1))  # dummy address that doesn't need to be reached
+        connection.connect(
+            ("10.255.255.255", 1)
+        )  # dummy address that doesn't need to be reached
         server_address = connection.getsockname()[0]
     except IOError:
-        server_address = '127.0.0.1'  # localhost loopback address
+        server_address = "127.0.0.1"  # localhost loopback address
     finally:
         connection.close()
     return server_address
@@ -1507,16 +1515,22 @@ def setup_client_connection(client: TiledWindow):
     client_event_loop.create_task(communication_with_server(client, client_event_loop))
     client_event_loop.run_forever()
 
+
 def get_initial_barrels(data: list, barrel_list):
     for barrel in data:
         barrel_list.append(BarrelSprite(barrel[0], barrel[1]))
 
-async def communication_with_server(client: TiledWindow, event_loop):  # client pulls from TiledWindow class
+
+async def communication_with_server(
+    client: TiledWindow, event_loop
+):  # client pulls from TiledWindow class
     UDPClientSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
 
     # send stuff to server to get player id for player determination
     keystate = json.dumps(client.actions.keys)
-    UDPClientSocket.sendto(str.encode(keystate), (client.server_address, int(client.server_port)))
+    UDPClientSocket.sendto(
+        str.encode(keystate), (client.server_address, int(client.server_port))
+    )
     data_packet = UDPClientSocket.recvfrom(1024)
     data = data_packet[0]
     decoded_data: PlayerState.GameState = PlayerState.GameState.from_json(data)
@@ -1529,7 +1543,6 @@ async def communication_with_server(client: TiledWindow, event_loop):  # client 
     decoded_addresses = data_packet.decode()
     ip_addresses = get_ip_addresses(decoded_addresses)
     print("ready to play")
-
 
     # sort out who is who
     player2_ip_addr = None
@@ -1545,7 +1558,9 @@ async def communication_with_server(client: TiledWindow, event_loop):  # client 
     while True:
         # send server keys pressed
         keystate = json.dumps(client.actions.keys)
-        UDPClientSocket.sendto(str.encode(keystate), (client.server_address, int(client.server_port)))
+        UDPClientSocket.sendto(
+            str.encode(keystate), (client.server_address, int(client.server_port))
+        )
 
         # get playerstate positions
         data_packet = UDPClientSocket.recvfrom(1024)
@@ -1557,7 +1572,9 @@ async def communication_with_server(client: TiledWindow, event_loop):  # client 
         game_info: PlayerState.GameInformation = gamestate_data.game_state
 
         # update client player information based on playerstate data
-        player1_info: PlayerState.PlayerState = player_dict[client.ip_addr]  # get info of your ip
+        player1_info: PlayerState.PlayerState = player_dict[
+            client.ip_addr
+        ]  # get info of your ip
         player.center_x = player1_info.x_loc
         player.center_y = player1_info.y_loc
         player.weapon.angle = player1_info.weapon_angle
@@ -1587,19 +1604,21 @@ async def communication_with_server(client: TiledWindow, event_loop):  # client 
 
 
 def main():
-    SERVER_ADDR = "10.0.0.241"
-    SERVER_PORT = "25001"
+    # SERVER_ADDR = "10.0.0.241"
+    # SERVER_PORT = "25001"
 
     CLIENT_ADDR = find_ip_address()
-    # SERVER_ADDR = input("enter the IP address to the game server:\n")     # uncomment before submission
-    # SERVER_PORT = input("enter the port to the game server:\n")
+    SERVER_ADDR = input("enter the IP address to the game server:\n")     # uncomment before submission
+    SERVER_PORT = input("enter the port to the game server:\n")
 
     window = TiledWindow(CLIENT_ADDR, SERVER_ADDR, SERVER_PORT)
 
-    client_thread = threading.Thread(target=setup_client_connection, args=(window,), daemon=True)
+    client_thread = threading.Thread(
+        target=setup_client_connection, args=(window,), daemon=True
+    )
     client_thread.start()
     arcade.run()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

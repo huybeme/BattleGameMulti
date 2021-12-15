@@ -13,31 +13,30 @@ of game play.
 
 Controls:
 
-Player 1:\
-            W           move up\
-            S           move down\
-            A           move left\
-            D           move right\
-            F           rotate cannon counter-clockwise\
-            G           rotate cannon clockwise\
-            SPACE       shoot in direction of the facing direction of ship\
-            R           shoot in the direction of the cannon
+Player:\
+            UP KEY              move up\
+            DOWN KEY            move down\
+            LEFT KEY            move left\
+            RIGHT KEY           move right\
+            S KEY               rotate cannon counter-clockwise\
+            W KEY               rotate cannon clockwise\
+            F KEY               shoot in direction of the facing direction of ship\
+            SPACE KEY           shoot in the direction of the cannon
 
-Player 2:\
-            UP          move up\
-            DOWN        move down\
-            LEFT        move left\
-            RIGHT       move right\
-            .           rotate cannon counter-clockwise\
-            /           rotate cannon clockwise\
-            LEFTCTRL    shoot in direction of the facing direction of ship\
-            '           shoot in the direction of the cannon
+This game has been programmed for local wireless multiplayer. To do so:\
+    Open Server.py to get the server's IP Address and Port number.\
+    Run Client2.py to connect to the server\
+        At this point, you cannot play the game until a second client has connected\
+        with another machine, run the same client2.py and enter the IP address and port number\
+    Once two clients have been connected, the game is able to play.\
 
-Notes:
+Not completed:\
+    Game ender - end the game after completion of the third map\
+    Items - items were not handled, will pop up locally but have no effect\
+    Whirlpools - not implemented\
 
-- There is a maximum of three bullets per player allowed in play. When a bullet explodes, the bullet will 
-be replenished.
-
-- Every major objective was completed
-
-- Python Black was run on code.
+Completed:\
+    Barrels - moveable sprite to use as a shield or strategy\
+    Shooting and adjust lives accordingly\
+    Switching level maps\
+    Collision detection\

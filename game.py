@@ -72,14 +72,14 @@ class BulletSprite(arcade.Sprite):
 
 class SpriteSheet(arcade.Sprite):
     def __init__(
-            self,
-            folder: str,
-            fn: str,
-            x_px: int,
-            y_px: int,
-            col: int,
-            num_sprites: int,
-            num_files,
+        self,
+        folder: str,
+        fn: str,
+        x_px: int,
+        y_px: int,
+        col: int,
+        num_sprites: int,
+        num_files,
     ):
         super().__init__()
         self.folder = folder
@@ -94,7 +94,7 @@ class SpriteSheet(arcade.Sprite):
 # <><><>----- PLAYER CLASS  -------------------------------------------------------------------------<><><>
 class Player(arcade.Sprite):
     def __init__(
-            self, img_path: str, scale: float, lives: int, id: int, sheet: SpriteSheet
+        self, img_path: str, scale: float, lives: int, id: int, sheet: SpriteSheet
     ):
         super().__init__(img_path)
         self.score = 0
@@ -243,6 +243,7 @@ class EnemySprite(arcade.Sprite):
 
         self.counter = 0
 
+
 class MoveableSprite(arcade.Sprite):
     def __init__(self, image: str, scale: float, center_x: int, center_y: int):
         super().__init__(image)
@@ -253,13 +254,13 @@ class MoveableSprite(arcade.Sprite):
 
 class PowerUpSprite(arcade.Sprite):
     def __init__(
-            self,
-            image: str,
-            scale: float,
-            center_x: int,
-            center_y: int,
-            effect: str,
-            color: arcade.color,
+        self,
+        image: str,
+        scale: float,
+        center_x: int,
+        center_y: int,
+        effect: str,
+        color: arcade.color,
     ):
         super().__init__(image)
         self.scale = scale
@@ -655,8 +656,6 @@ class TiledWindow(arcade.Window):
         self.p1_power_up_timer = 0
         self.p2_power_up_timer = 0
 
-
-
     # Initially sets up or restarts the game
     def setup(self):
         # Main Scene call
@@ -935,10 +934,10 @@ class TiledWindow(arcade.Window):
             hit_player = arcade.check_for_collision_with_list(bullet, self.player_list)
 
             if (
-                    len(hit_enemy) > 0
-                    or len(hit_wall) > 0
-                    or len(hit_barrel) > 0
-                    or len(hit_player) > 0
+                len(hit_enemy) > 0
+                or len(hit_wall) > 0
+                or len(hit_barrel) > 0
+                or len(hit_player) > 0
             ):
                 explosion = arcade.Sprite("./Assets/World/Effects/SPR_Explosion_0.png")
                 explosion.center_x = bullet.center_x
@@ -1248,10 +1247,10 @@ class TiledWindow(arcade.Window):
                 )
                 bullet.set_position(enemy.center_x, enemy.weapon.center_y)
                 bullet.change_x = (
-                        math.cos(math.radians(enemy.weapon.angle)) * PLAYER_SHOOT_SPEED
+                    math.cos(math.radians(enemy.weapon.angle)) * PLAYER_SHOOT_SPEED
                 )
                 bullet.change_y = (
-                        math.sin(math.radians(enemy.weapon.angle)) * PLAYER_SHOOT_SPEED
+                    math.sin(math.radians(enemy.weapon.angle)) * PLAYER_SHOOT_SPEED
                 )
                 self.enemy_bullet_list.append(bullet)
 
@@ -1259,44 +1258,44 @@ class TiledWindow(arcade.Window):
             # UP
         if self.player_1.direction[0] == True:
             self.player_1.change_y = (
-                    self.p1_total_movement_speed + self.p1_movement_speed_extra
+                self.p1_total_movement_speed + self.p1_movement_speed_extra
             )
         # LEFT
         if self.player_1.direction[1] == True:
             self.player_1.change_x = (
-                    -self.p1_total_movement_speed - self.p1_movement_speed_extra
+                -self.p1_total_movement_speed - self.p1_movement_speed_extra
             )
         # DOWN
         if self.player_1.direction[2] == True:
             self.player_1.change_y = (
-                    -self.p1_total_movement_speed - self.p1_movement_speed_extra
+                -self.p1_total_movement_speed - self.p1_movement_speed_extra
             )
         # RIGHT
         if self.player_1.direction[3] == True:
             self.player_1.change_x = (
-                    self.p1_total_movement_speed + self.p1_movement_speed_extra
+                self.p1_total_movement_speed + self.p1_movement_speed_extra
             )
 
             # PLAYER 2 MOVEMENT
             # UP
         if self.player_2.direction[0] == True:
             self.player_2.change_y = (
-                    self.p2_total_movement_speed + self.p2_movement_speed_extra
+                self.p2_total_movement_speed + self.p2_movement_speed_extra
             )
         # LEFT
         if self.player_2.direction[1] == True:
             self.player_2.change_x = (
-                    -self.p2_total_movement_speed - self.p2_movement_speed_extra
+                -self.p2_total_movement_speed - self.p2_movement_speed_extra
             )
         # DOWN
         if self.player_2.direction[2] == True:
             self.player_2.change_y = (
-                    -self.p2_total_movement_speed - self.p2_movement_speed_extra
+                -self.p2_total_movement_speed - self.p2_movement_speed_extra
             )
         # RIGHT
         if self.player_2.direction[3] == True:
             self.player_2.change_x = (
-                    self.p2_total_movement_speed + self.p2_movement_speed_extra
+                self.p2_total_movement_speed + self.p2_movement_speed_extra
             )
 
         if self.clear_flag:
@@ -1429,17 +1428,17 @@ class TiledWindow(arcade.Window):
         if player.is_cannon_shooting:
             # bullet.angle = self.player_1.weapon.angle   # not needed since our ammo is somewhat symmetrical
             bullet.change_x = (
-                    math.cos(math.radians(player.weapon.angle)) * dist_to_next_point
+                math.cos(math.radians(player.weapon.angle)) * dist_to_next_point
             )
             bullet.change_y = (
-                    math.sin(math.radians(player.weapon.angle)) * dist_to_next_point
+                math.sin(math.radians(player.weapon.angle)) * dist_to_next_point
             )
         else:
             bullet.change_x = (
-                    math.cos(math.radians(player.face_angle)) * dist_to_next_point
+                math.cos(math.radians(player.face_angle)) * dist_to_next_point
             )
             bullet.change_y = (
-                    math.sin(math.radians(player.face_angle)) * dist_to_next_point
+                math.sin(math.radians(player.face_angle)) * dist_to_next_point
             )
         # set position has a correction so bullets dont collide with self, may not be suitable if we use other sprite sheets than the current ship one
         bullet.set_position(
@@ -1626,6 +1625,7 @@ class TiledWindow(arcade.Window):
         self.post_whirlpool_sprite.frames = post_whirlpool_frames
         self.post_whirlpool_list.append(self.post_whirlpool_sprite)
         whirlpool.remove_from_sprite_lists()
+
 
 # #  ////  ----- MAIN METHOD --------------------------------------------------------////
 # def main():
