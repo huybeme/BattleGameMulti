@@ -310,7 +310,7 @@ class TiledWindow(arcade.Window):
         self.restart_tick = 5
 
         self.current_round = 0
-        self.barrel_pos = None
+        self.barrel_pos = [[0,0]]
 
         layer_options = {
             "Water": {"use_spatial_hash": True},
@@ -394,138 +394,6 @@ class TiledWindow(arcade.Window):
         # self.whirlpool_sprite = None
         self.post_whirlpool_list = arcade.SpriteList()
         self.post_whirlpool_sprite = None
-
-        # MAP 1
-        self.barrel_1 = arcade.AnimatedTimeBasedSprite(
-            "./Assets/World/Objects/Barrel/SPR_Barrel_0.png",
-            1,
-            center_x=285,
-            center_y=340,
-        )
-        self.barrel_2 = arcade.AnimatedTimeBasedSprite(
-            "./Assets/World/Objects/Barrel/SPR_Barrel_0.png",
-            1,
-            center_x=SCREEN_WIDTH - 285,
-            center_y=SCREEN_HEIGHT - 340,
-        )
-        self.barrel_3 = arcade.AnimatedTimeBasedSprite(
-            "./Assets/World/Objects/Barrel/SPR_Barrel_0.png",
-            1,
-            center_x=560,
-            center_y=660,
-        )
-        self.barrel_4 = arcade.AnimatedTimeBasedSprite(
-            "./Assets/World/Objects/Barrel/SPR_Barrel_0.png",
-            1,
-            center_x=SCREEN_WIDTH - 560,
-            center_y=SCREEN_HEIGHT - 660,
-        )
-
-        # MAP 2
-        self.barrel_5 = arcade.AnimatedTimeBasedSprite(
-            "./Assets/World/Objects/Barrel/SPR_Barrel_0.png",
-            1,
-            center_x=400,
-            center_y=400,
-        )
-        self.barrel_6 = arcade.AnimatedTimeBasedSprite(
-            "./Assets/World/Objects/Barrel/SPR_Barrel_0.png",
-            1,
-            center_x=SCREEN_WIDTH - 380,
-            center_y=400,
-        )
-        self.barrel_7 = arcade.AnimatedTimeBasedSprite(
-            "./Assets/World/Objects/Barrel/SPR_Barrel_0.png",
-            1,
-            center_x=200,
-            center_y=300,
-        )
-        self.barrel_8 = arcade.AnimatedTimeBasedSprite(
-            "./Assets/World/Objects/Barrel/SPR_Barrel_0.png",
-            1,
-            center_x=SCREEN_WIDTH - 200,
-            center_y=SCREEN_HEIGHT - 300,
-        )
-        self.barrel_9 = arcade.AnimatedTimeBasedSprite(
-            "./Assets/World/Objects/Barrel/SPR_Barrel_0.png",
-            1,
-            center_x=SCREEN_WIDTH - 100,
-            center_y=100,
-        )
-        self.barrel_10 = arcade.AnimatedTimeBasedSprite(
-            "./Assets/World/Objects/Barrel/SPR_Barrel_0.png",
-            1,
-            center_x=100,
-            center_y=SCREEN_HEIGHT - 100,
-        )
-
-        # MAP 3
-        self.barrel_11 = arcade.AnimatedTimeBasedSprite(
-            "./Assets/World/Objects/Barrel/SPR_Barrel_0.png",
-            1,
-            center_x=384,
-            center_y=160,
-        )
-        self.barrel_12 = arcade.AnimatedTimeBasedSprite(
-            "./Assets/World/Objects/Barrel/SPR_Barrel_0.png",
-            1,
-            center_x=SCREEN_WIDTH - 384,
-            center_y=SCREEN_HEIGHT - 160,
-        )
-        self.barrel_13 = arcade.AnimatedTimeBasedSprite(
-            "./Assets/World/Objects/Barrel/SPR_Barrel_0.png",
-            1,
-            center_x=190,
-            center_y=SCREEN_HEIGHT - 120,
-        )
-        self.barrel_14 = arcade.AnimatedTimeBasedSprite(
-            "./Assets/World/Objects/Barrel/SPR_Barrel_0.png",
-            1,
-            center_x=SCREEN_WIDTH - 190,
-            center_y=120,
-        )
-
-        # # --- BARREL-----------------------------------------------------------------------------//
-        # barrel_sprite_path = "./Assets/World/Objects/Barrel/Barrel_Sprite_Sheet.png"
-        # barrel_frames: List[arcade.AnimationKeyframe] = []
-        #
-        # for row in range(2):
-        #     for column in range(4):
-        #         frame = arcade.AnimationKeyframe(
-        #             (column + 1) * (row + 1),
-        #             125,
-        #             arcade.load_texture(
-        #                 str(barrel_sprite_path),
-        #                 x=column * 40,
-        #                 y=row * 50,
-        #                 width=40,
-        #                 height=50,
-        #             ),
-        #         )
-        #         barrel_frames.append(frame)
-        #
-        # self.barrel_1.frames = barrel_frames
-        # self.barrel_2.frames = barrel_frames
-        # self.barrel_3.frames = barrel_frames
-        # self.barrel_4.frames = barrel_frames
-        #
-        # # INITIAL MAP 1 ADD
-        # self.barrel_list.append(self.barrel_1)
-        # self.barrel_list.append(self.barrel_2)
-        # self.barrel_list.append(self.barrel_3)
-        # self.barrel_list.append(self.barrel_4)
-        #
-        # self.barrel_5.frames = barrel_frames
-        # self.barrel_6.frames = barrel_frames
-        # self.barrel_7.frames = barrel_frames
-        # self.barrel_8.frames = barrel_frames
-        # self.barrel_9.frames = barrel_frames
-        # self.barrel_10.frames = barrel_frames
-        #
-        # self.barrel_11.frames = barrel_frames
-        # self.barrel_12.frames = barrel_frames
-        # self.barrel_13.frames = barrel_frames
-        # self.barrel_14.frames = barrel_frames
 
         # --- WHIRLPOOL -----------------------------------------------------------------------------//
         self.whirlpool_list = arcade.SpriteList()
@@ -693,85 +561,85 @@ class TiledWindow(arcade.Window):
         for post_whirlpool in self.post_whirlpool_list:
             post_whirlpool.remove_from_sprite_lists()
             self.post_whirlpool_list.update()
-
-        if self.round == 1:
-
-            self.barrel_1.remove_from_sprite_lists()
-            self.barrel_2.remove_from_sprite_lists()
-            self.barrel_3.remove_from_sprite_lists()
-            self.barrel_4.remove_from_sprite_lists()
-
-            self.barrel_11.remove_from_sprite_lists()
-            self.barrel_12.remove_from_sprite_lists()
-            self.barrel_13.remove_from_sprite_lists()
-            self.barrel_14.remove_from_sprite_lists()
-
-            self.barrel_list.append(self.barrel_1)
-            self.barrel_list.append(self.barrel_2)
-            self.barrel_list.append(self.barrel_3)
-            self.barrel_list.append(self.barrel_4)
-
-        elif self.round == 2:
-
-            self.barrel_1.remove_from_sprite_lists()
-            self.barrel_2.remove_from_sprite_lists()
-            self.barrel_3.remove_from_sprite_lists()
-            self.barrel_4.remove_from_sprite_lists()
-
-            self.barrel_list.append(self.barrel_5)
-            self.barrel_list.append(self.barrel_6)
-            self.barrel_list.append(self.barrel_7)
-            self.barrel_list.append(self.barrel_8)
-            self.barrel_list.append(self.barrel_9)
-            self.barrel_list.append(self.barrel_10)
-
-            self.pre_whirlpool_list.append(self.whirlpool_1)
-            self.pre_whirlpool_list.append(self.whirlpool_2)
-
-            self.map_scene = arcade.Scene.from_tilemap(self.tile_map2)
-            self.wall_list = self.tile_map2.sprite_lists["Solids"]
-            self.beach_tile_list = self.tile_map2.sprite_lists["Beach"]
-            self.water_tile_list = self.tile_map2.sprite_lists["Water"]
-
-        elif self.round == 3:
-
-            self.whirlpool_1.remove_from_sprite_lists()
-            self.whirlpool_2.remove_from_sprite_lists()
-            self.whirlpool_3.remove_from_sprite_lists()
-
-            for pre_whirlpool in self.pre_whirlpool_list:
-                pre_whirlpool.remove_from_sprite_lists()
-
-            for whirlpool in self.whirlpool_list:
-                whirlpool.remove_from_sprite_lists()
-
-            for post_whirlpool in self.post_whirlpool_list:
-                post_whirlpool.remove_from_sprite_lists()
-
-            self.pre_whirlpool_list.append(self.whirlpool_4)
-            self.pre_whirlpool_list.append(self.whirlpool_5)
-            self.pre_whirlpool_list.append(self.whirlpool_6)
-            self.pre_whirlpool_list.append(self.whirlpool_7)
-            self.pre_whirlpool_list.append(self.whirlpool_8)
-
-            # self.whirlpool_3.remove_from_sprite_lists()
-
-            self.barrel_5.remove_from_sprite_lists()
-            self.barrel_6.remove_from_sprite_lists()
-            self.barrel_7.remove_from_sprite_lists()
-            self.barrel_8.remove_from_sprite_lists()
-            self.barrel_9.remove_from_sprite_lists()
-            self.barrel_10.remove_from_sprite_lists()
-
-            self.barrel_list.append(self.barrel_11)
-            self.barrel_list.append(self.barrel_12)
-            self.barrel_list.append(self.barrel_13)
-            self.barrel_list.append(self.barrel_14)
-
-            self.map_scene = arcade.Scene.from_tilemap(self.tile_map3)
-            self.wall_list = self.tile_map3.sprite_lists["Solids"]
-            self.beach_tile_list = self.tile_map3.sprite_lists["Beach"]
-            self.water_tile_list = self.tile_map3.sprite_lists["Water"]
+        #
+        # if self.round == 1:
+        #
+        #     self.barrel_1.remove_from_sprite_lists()
+        #     self.barrel_2.remove_from_sprite_lists()
+        #     self.barrel_3.remove_from_sprite_lists()
+        #     self.barrel_4.remove_from_sprite_lists()
+        #
+        #     self.barrel_11.remove_from_sprite_lists()
+        #     self.barrel_12.remove_from_sprite_lists()
+        #     self.barrel_13.remove_from_sprite_lists()
+        #     self.barrel_14.remove_from_sprite_lists()
+        #
+        #     self.barrel_list.append(self.barrel_1)
+        #     self.barrel_list.append(self.barrel_2)
+        #     self.barrel_list.append(self.barrel_3)
+        #     self.barrel_list.append(self.barrel_4)
+        #
+        # elif self.round == 2:
+        #
+        #     self.barrel_1.remove_from_sprite_lists()
+        #     self.barrel_2.remove_from_sprite_lists()
+        #     self.barrel_3.remove_from_sprite_lists()
+        #     self.barrel_4.remove_from_sprite_lists()
+        #
+        #     self.barrel_list.append(self.barrel_5)
+        #     self.barrel_list.append(self.barrel_6)
+        #     self.barrel_list.append(self.barrel_7)
+        #     self.barrel_list.append(self.barrel_8)
+        #     self.barrel_list.append(self.barrel_9)
+        #     self.barrel_list.append(self.barrel_10)
+        #
+        #     self.pre_whirlpool_list.append(self.whirlpool_1)
+        #     self.pre_whirlpool_list.append(self.whirlpool_2)
+        #
+        #     self.map_scene = arcade.Scene.from_tilemap(self.tile_map2)
+        #     self.wall_list = self.tile_map2.sprite_lists["Solids"]
+        #     self.beach_tile_list = self.tile_map2.sprite_lists["Beach"]
+        #     self.water_tile_list = self.tile_map2.sprite_lists["Water"]
+        #
+        # elif self.round == 3:
+        #
+        #     self.whirlpool_1.remove_from_sprite_lists()
+        #     self.whirlpool_2.remove_from_sprite_lists()
+        #     self.whirlpool_3.remove_from_sprite_lists()
+        #
+        #     for pre_whirlpool in self.pre_whirlpool_list:
+        #         pre_whirlpool.remove_from_sprite_lists()
+        #
+        #     for whirlpool in self.whirlpool_list:
+        #         whirlpool.remove_from_sprite_lists()
+        #
+        #     for post_whirlpool in self.post_whirlpool_list:
+        #         post_whirlpool.remove_from_sprite_lists()
+        #
+        #     self.pre_whirlpool_list.append(self.whirlpool_4)
+        #     self.pre_whirlpool_list.append(self.whirlpool_5)
+        #     self.pre_whirlpool_list.append(self.whirlpool_6)
+        #     self.pre_whirlpool_list.append(self.whirlpool_7)
+        #     self.pre_whirlpool_list.append(self.whirlpool_8)
+        #
+        #     # self.whirlpool_3.remove_from_sprite_lists()
+        #
+        #     self.barrel_5.remove_from_sprite_lists()
+        #     self.barrel_6.remove_from_sprite_lists()
+        #     self.barrel_7.remove_from_sprite_lists()
+        #     self.barrel_8.remove_from_sprite_lists()
+        #     self.barrel_9.remove_from_sprite_lists()
+        #     self.barrel_10.remove_from_sprite_lists()
+        #
+        #     self.barrel_list.append(self.barrel_11)
+        #     self.barrel_list.append(self.barrel_12)
+        #     self.barrel_list.append(self.barrel_13)
+        #     self.barrel_list.append(self.barrel_14)
+        #
+        #     self.map_scene = arcade.Scene.from_tilemap(self.tile_map3)
+        #     self.wall_list = self.tile_map3.sprite_lists["Solids"]
+        #     self.beach_tile_list = self.tile_map3.sprite_lists["Beach"]
+        #     self.water_tile_list = self.tile_map3.sprite_lists["Water"]
 
         self.gameover = True
 
@@ -821,24 +689,24 @@ class TiledWindow(arcade.Window):
             self.restart_tick = 5
             self.round = 0
 
-            self.whirlpool_4.remove_from_sprite_lists()
-            self.whirlpool_5.remove_from_sprite_lists()
-            self.whirlpool_6.remove_from_sprite_lists()
-            self.whirlpool_7.remove_from_sprite_lists()
-            self.whirlpool_8.remove_from_sprite_lists()
-
-            self.barrel_11.remove_from_sprite_lists()
-            self.barrel_12.remove_from_sprite_lists()
-            self.barrel_13.remove_from_sprite_lists()
-            self.barrel_14.remove_from_sprite_lists()
-            self.map_scene = arcade.Scene.from_tilemap(self.tile_map1)
-            self.wall_list = self.tile_map1.sprite_lists["Solids"]
-            self.beach_tile_list = self.tile_map1.sprite_lists["Beach"]
-            self.water_tile_list = self.tile_map1.sprite_lists["Water"]
-            self.barrel_list.append(self.barrel_1)
-            self.barrel_list.append(self.barrel_2)
-            self.barrel_list.append(self.barrel_3)
-            self.barrel_list.append(self.barrel_4)
+            # self.whirlpool_4.remove_from_sprite_lists()
+            # self.whirlpool_5.remove_from_sprite_lists()
+            # self.whirlpool_6.remove_from_sprite_lists()
+            # self.whirlpool_7.remove_from_sprite_lists()
+            # self.whirlpool_8.remove_from_sprite_lists()
+            #
+            # self.barrel_11.remove_from_sprite_lists()
+            # self.barrel_12.remove_from_sprite_lists()
+            # self.barrel_13.remove_from_sprite_lists()
+            # self.barrel_14.remove_from_sprite_lists()
+            # self.map_scene = arcade.Scene.from_tilemap(self.tile_map1)
+            # self.wall_list = self.tile_map1.sprite_lists["Solids"]
+            # self.beach_tile_list = self.tile_map1.sprite_lists["Beach"]
+            # self.water_tile_list = self.tile_map1.sprite_lists["Water"]
+            # self.barrel_list.append(self.barrel_1)
+            # self.barrel_list.append(self.barrel_2)
+            # self.barrel_list.append(self.barrel_3)
+            # self.barrel_list.append(self.barrel_4)
             self.player_1.score = 0
             self.player_2.score = 0
 
@@ -970,6 +838,14 @@ class TiledWindow(arcade.Window):
 
         self.player_1.hit_box = [[-30, -30], [30, -30], [30, 30], [-30, 30]]
         self.player_2.hit_box = [[-30, -30], [30, -30], [30, 30], [-30, 30]]
+
+        # update barrel position
+        count = 0
+        for barrel in self.barrel_list:
+            if len(self.barrel_pos) == 6:
+                barrel.center_x = self.barrel_pos[count][0]
+                barrel.center_y = self.barrel_pos[count][1]
+            count += 1
 
         # PUSHABLE BARREL -----------------------------------------------------------------\\
         for barrel in self.barrel_list:
@@ -1507,9 +1383,11 @@ def setup_client_connection(client: TiledWindow):
     client_event_loop.create_task(communication_with_server(client, client_event_loop))
     client_event_loop.run_forever()
 
+
 def get_initial_barrels(data: list, barrel_list):
     for barrel in data:
         barrel_list.append(BarrelSprite(barrel[0], barrel[1]))
+
 
 async def communication_with_server(client: TiledWindow, event_loop):  # client pulls from TiledWindow class
     UDPClientSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
@@ -1529,7 +1407,6 @@ async def communication_with_server(client: TiledWindow, event_loop):  # client 
     decoded_addresses = data_packet.decode()
     ip_addresses = get_ip_addresses(decoded_addresses)
     print("ready to play")
-
 
     # sort out who is who
     player2_ip_addr = None
@@ -1577,7 +1454,7 @@ async def communication_with_server(client: TiledWindow, event_loop):  # client 
         player2.lives = game_info.player2_lives
         player2.score = game_info.player2_score
 
-        # client.barrel_pos = gamestate_data.game_state.barrel_list
+        client.barrel_pos = gamestate_data.game_state.barrel_list
 
         client.round = game_info.level_num
         if game_info.level_num > client.current_round:
