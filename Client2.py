@@ -847,69 +847,6 @@ class TiledWindow(arcade.Window):
                 barrel.center_y = self.barrel_pos[count][1]
             count += 1
 
-        # PUSHABLE BARREL -----------------------------------------------------------------\\
-        for barrel in self.barrel_list:
-            barrel.hit_box = [[-20, -20], [20, -20], [20, 20], [-20, 20]]
-
-            player_1_collision = arcade.check_for_collision(barrel, self.player_1)
-            player_2_collision = arcade.check_for_collision(barrel, self.player_2)
-            wall_collision = arcade.check_for_collision_with_list(
-                barrel, self.wall_list
-            )
-
-            if player_1_collision:
-                if not wall_collision:
-                    # Moving RIGHT
-                    if self.player_1.change_x > 0:
-                        barrel.change_x = self.player_1.change_x + 0.5
-                        # Moving LEFT
-                    elif self.player_1.change_x < 0:
-                        barrel.change_x = self.player_1.change_x - 0.5
-                    elif self.player_1.change_x == 0:
-                        barrel.change_x = 0
-
-                    # Moving DOWN
-                    if self.player_1.change_y > 0:
-                        barrel.change_y = self.player_1.change_y + 0.5
-                    # Moving UP
-                    elif self.player_1.change_y < 0:
-                        barrel.change_y = self.player_1.change_y - 0.5
-                    elif self.player_1.change_y == 0:
-                        barrel.change_y = 0
-
-                    barrel.center_x += barrel.change_x
-                    barrel.center_y += barrel.change_y
-
-                else:
-                    barrel.center_x -= barrel.change_x
-                    barrel.center_y -= barrel.change_y
-
-            if player_2_collision:
-                if not wall_collision:
-                    # Moving RIGHT
-                    if self.player_2.change_x > 0:
-                        barrel.change_x = self.player_2.change_x + 0.5
-                        # Moving LEFT
-                    elif self.player_2.change_x < 0:
-                        barrel.change_x = self.player_2.change_x - 0.5
-                    elif self.player_2.change_x == 0:
-                        barrel.change_x = 0
-
-                    # Moving DOWN
-                    if self.player_2.change_y > 0:
-                        barrel.change_y = self.player_2.change_y + 0.5
-                    # Moving UP
-                    elif self.player_2.change_y < 0:
-                        barrel.change_y = self.player_2.change_y - 0.5
-                    elif self.player_2.change_y == 0:
-                        barrel.change_y = 0
-
-                    barrel.center_x += barrel.change_x
-                    barrel.center_y += barrel.change_y
-                else:
-                    barrel.center_x -= barrel.change_x
-                    barrel.center_y -= barrel.change_y
-
         # PRE_WHIRLPOOL -----------------------------------------------------------------\\
         for pre_whirlpool in self.pre_whirlpool_list:
             pre_whirlpool.hit_box = [[-60, -60], [60, -60], [60, 60], [-60, 60]]

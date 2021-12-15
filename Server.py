@@ -334,6 +334,14 @@ def update_game_state(game_info: PlayerState.GameInformation, gamestate: PlayerS
     wall_list = game_map.sprite_lists["Solids"]
     map_scene = arcade.Scene.from_tilemap(game_map)
 
+    barrel_coords = get_barrel_coords(gamestate.game_state.level_num)
+    count = 0
+    for barrels in barrel_list:
+        barrels.set_position(barrel_coords[count][0], barrel_coords[count][1])
+        gamestate.game_state.barrel_list[count][0] = barrel_coords[count][0]
+        gamestate.game_state.barrel_list[count][1] = barrel_coords[count][1]
+        count += 1
+
     if gamestate.player_states[client_address[0]].id == 1:
         player1.set_position(80, 80)
         gamestate.player_states[client_address[0]].x_loc = 80
@@ -530,7 +538,7 @@ def get_barrel_coords(lvl: int):
     global map_scene
     for i in range(6):
         barrel_list.append(Barrel(set_1[i][0], set_1[i][1]))
-    map_scene.add_sprite_list(barrel_list)
+    map_scene.add_sprite_list("barrels", sprite_list=barrel_list)
 
     if lvl == 1:
         return set_1
