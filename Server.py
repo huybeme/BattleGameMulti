@@ -403,7 +403,7 @@ def process_player_shooting(gamestate: PlayerState.GameState, client_address: st
     global bullet_list
     global map_scene
     if player_info.shooting:
-        bullet = None
+        bullet = Bullet(0)
         if player_info.id == 1:
             bullet = Bullet(1)
         elif player_info.id == 2:
@@ -504,8 +504,8 @@ async def communication_with_client(server: GameWindow, event_loop, gamestate, s
         player_move: PlayerState.PlayerMovement = PlayerState.PlayerMovement()
         player_move.keys = json_data
 
-        process_barrel_collision(gamestate, client_address)
         process_player_shooting(gamestate, client_address, player_move, gamestate.game_state)
+        process_barrel_collision(gamestate, client_address)
         process_player_movement(player_move, client_address, gamestate)
         check_for_collision(gamestate, client_address)
 
